@@ -49,9 +49,7 @@
             ".admin-content .stat-cell",
             ".admin-content .panel",
             ".admin-content .table-wrap",
-            ".admin-content .filters",
-            ".admin-login-body .login-brand-panel > *",
-            ".admin-login-body .login-card"
+            ".admin-content .filters"
         ].join(", ");
 
         var targets = document.querySelectorAll(selector);

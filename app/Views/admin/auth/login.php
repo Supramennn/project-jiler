@@ -33,6 +33,9 @@
             <?= esc($store->email) ?><br>
             <span class="login-credit">Diproduksi oleh <?= esc($store->producer) ?></span>
         </div>
+
+        <span class="login-stamp" aria-hidden="true">Admin</span>
+        <span class="login-ledger-scan" aria-hidden="true"></span>
     </section>
 
     <section class="login-form-panel">

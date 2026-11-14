@@ -1239,6 +1239,13 @@ textarea {
     outline: none;
 }
 
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+}
+
 .field.has-error input,
 .field.has-error select,
 .field.has-error textarea {

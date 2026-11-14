@@ -283,6 +283,7 @@ Perintah ini tidak memproses pesanan `pending` dan tidak mengirim akses sebelum 
 - Skip link, fokus keyboard, dan penutupan drawer dengan Escape berfungsi.
 - Audit kontras otomatis pada beranda, detail, checkout, login, dan dashboard tidak menemukan teks di bawah rasio WCAG AA.
 - Animasi hero, reveal, hover, drawer, dan grafik diuji di Chromium pada 360 dan 1440 piksel. Tidak ada error konsol.
+- Animasi login admin (cap, garis ledger, garis pindai, dan form bertahap) diuji pada 360, 1024, dan 1440 piksel. Login tetap berhasil dan tidak ada error konsol.
 - `prefers-reduced-motion` mematikan animasi dan delay tanpa menyembunyikan konten.
 
 ## Checklist produksi

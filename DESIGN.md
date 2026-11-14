@@ -74,6 +74,7 @@ Ukuran judul memakai `clamp()` agar tetap proporsional dari ponsel sampai deskto
 - Animasi masuk memakai IntersectionObserver: elemen muncul sekali dengan geser 18 piksel dan opacity, bukan animasi berulang. Hero, dossier, dan grafik punya animasi pembuka sendiri.
 - Baris produk memberi umpan balik hover lewat latar tipis, garis emas, dan harga yang bergeser. Tombol terangkat satu piksel saat hover.
 - Drawer mobile memakai transisi opacity dan geser vertikal; `prefers-reduced-motion` mematikan animasi dan delay.
+- Login admin memakai cap "Admin" yang tercetak miring, garis ledger yang tumbuh, dan satu garis pindai yang menyapu panel sekali. Form masuk bertahap; semua gerak berhenti saat `prefers-reduced-motion` aktif.
 - Tombol salin memberi umpan balik "Tersalin" lalu kembali ke label awal.
 
 ## Aksesibilitas
