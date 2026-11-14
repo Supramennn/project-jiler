@@ -265,6 +265,7 @@ Perintah ini tidak memproses pesanan `pending` dan tidak mengirim akses sebelum 
 
 - Semua halaman publik merespons `200`.
 - Checkout dan pemilihan VA Permata, GoPay, QRIS berhasil.
+- Pesanan baru memakai awalan `INV-` dan invoice `INV/`.
 - Simulasi pembayaran sandbox mengubah status menjadi `paid`.
 - Invoice menampilkan status `LUNAS`.
 - Webhook dengan signature salah ditolak `403`, pesanan tetap pending, email tidak dikirim.
@@ -277,8 +278,12 @@ Perintah ini tidak memproses pesanan `pending` dan tidak mengirim akses sebelum 
 - Akses admin tanpa login dialihkan ke halaman login.
 - Validasi form produk menampilkan error yang benar.
 - `email:retry` diuji dengan pesanan paid berstatus email `gagal`, lalu berhasil menjadi `terkirim`.
-- Layout 360 piksel diuji pada beranda, katalog, detail, checkout, dan login. Tidak ada overflow horisontal.
-- Animasi reveal, hover, drawer, dan grafik diuji di browser Chromium.
+- Layout 360 piksel diuji pada beranda, katalog, detail, checkout, status, halaman legal, login, dan dashboard. Tidak ada overflow horisontal.
+- Target sentuh tombol dan tautan aksi minimal 44 piksel pada semua halaman yang diuji.
+- Skip link, fokus keyboard, dan penutupan drawer dengan Escape berfungsi.
+- Audit kontras otomatis pada beranda, detail, checkout, login, dan dashboard tidak menemukan teks di bawah rasio WCAG AA.
+- Animasi hero, reveal, hover, drawer, dan grafik diuji di Chromium pada 360 dan 1440 piksel. Tidak ada error konsol.
+- `prefers-reduced-motion` mematikan animasi dan delay tanpa menyembunyikan konten.
 
 ## Checklist produksi
 
@@ -288,6 +293,7 @@ Perintah ini tidak memproses pesanan `pending` dan tidak mengirim akses sebelum 
 - Isi server key dan client key Midtrans, set `PAYMENT_DRIVER = midtrans`.
 - Daftarkan `https://domain-anda/webhook/midtrans` sebagai Payment Notification URL di Midtrans.
 - Set `MAIL_DRIVER = smtp` dan isi kredensial Gmail App Password.
+- Set `MAIL_FROM_EMAIL` ke alamat Gmail yang sama dengan `MAIL_SMTP_USER`.
 - Ganti `APP_KEY` dengan nilai acak baru, minimal 32 karakter.
 - Ganti email admin dan hash kata sandi admin.
 - Ganti semua link template, video, dan panduan yang masih memakai `example.com` dari menu **Produk**.

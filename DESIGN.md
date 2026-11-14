@@ -80,6 +80,7 @@ Ukuran judul memakai `clamp()` agar tetap proporsional dari ponsel sampai deskto
 
 - Skip link ke konten utama.
 - Kontras teks utama dan muted di atas kertas sudah cukup untuk ukuran kecil; status memakai latar dan teks yang berbeda, bukan warna saja.
+- Target sentuh tombol dan tautan aksi minimal 44 piksel. Audit kontras otomatis pada halaman utama lulus WCAG AA.
 - Semua input punya label eksplisit. Pesan error tampil di dekat field dan juga diringkas di atas formulir checkout.
 - Tabel memakai `th scope="col"`. Grafik punya `aria-label` dan tabel alternatif.
 - Halaman admin memakai `aria-current="page"` pada navigasi aktif.
