@@ -329,7 +329,7 @@ textarea {
 }
 
 .btn-small {
-    min-height: 38px;
+    min-height: 44px;
     padding: 8px 14px;
     font-size: 13px;
 }
@@ -990,6 +990,10 @@ textarea {
 }
 
 .breadcrumb span {
+    color: var(--muted);
+}
+
+.breadcrumb span[aria-hidden="true"] {
     color: var(--line-strong);
 }
 
@@ -2103,10 +2107,12 @@ textarea {
         font-size: 15px;
     }
 
-    .site-nav .btn {
+    .site-nav a.btn,
+    .site-nav a.btn:hover {
         display: inline-flex;
         margin-top: 12px;
         border-bottom: 0;
+        color: var(--paper);
     }
 
     .nav-actions .btn {
