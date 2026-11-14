@@ -1,0 +1,191 @@
+<?php
+$featuredFeatures = $featured ? array_slice(product_features($featured['fitur']), 0, 4) : [];
+?>
+<section class="hero">
+    <div class="wrap hero-grid">
+        <div class="hero-copy">
+            <h1>Stok rapi tanpa hitung ulang di buku tulis.</h1>
+            <p class="lede">Template Manajemen Stok Barang siap salin ke akun Google Anda. Bayar sekali, akses selamanya. Invoice, link template, dan panduan deploy dikirim ke email setelah pembayaran terverifikasi.</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="<?= site_url('produk') ?>">Lihat katalog template</a>
+                <a class="btn btn-ghost" href="<?= site_url('status') ?>">Cek status pesanan</a>
+            </div>
+            <div class="hero-facts">
+                <span>Sekali bayar</span>
+                <span>Akses selamanya</span>
+                <span>Email otomatis setelah bayar</span>
+            </div>
+        </div>
+
+        <aside class="dossier" aria-label="Isi paket template">
+            <div class="dossier-head">
+                <h2>Isi paket</h2>
+                <span>Produk digital</span>
+            </div>
+            <div class="dossier-body">
+                <div class="dossier-row"><strong>Template Google Sheets</strong><span>Siap disalin</span></div>
+                <div class="dossier-row"><strong>Web app Apps Script</strong><span>Deploy sendiri</span></div>
+                <div class="dossier-row"><strong>Video panduan</strong><span>Langkah deploy</span></div>
+                <div class="dossier-row"><strong>Panduan teks</strong><span>Referensi cetak</span></div>
+                <div class="dossier-row"><strong>Invoice resmi</strong><span>Dikirim via email</span></div>
+            </div>
+            <div class="dossier-foot">
+                <p>Dikirim ke email pembeli setelah pembayaran terverifikasi.</p>
+                <div class="dossier-total">
+                    <span>Mulai dari</span>
+                    <strong><?= rupiah($featured['harga'] ?? 0) ?></strong>
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+
+<div class="fact-strip">
+    <div class="wrap">
+        <dl class="fact-grid">
+            <div class="fact">
+                <dt>Pembayaran</dt>
+                <dd>VA Permata, GoPay, QRIS</dd>
+            </div>
+            <div class="fact">
+                <dt>Pengiriman akses</dt>
+                <dd>Otomatis dari webhook</dd>
+            </div>
+            <div class="fact">
+                <dt>Masa akses</dt>
+                <dd>Tanpa batas waktu</dd>
+            </div>
+            <div class="fact">
+                <dt>Panduan</dt>
+                <dd>Video dan teks</dd>
+            </div>
+        </dl>
+    </div>
+</div>
+
+<section class="section" id="produk">
+    <div class="wrap">
+        <div class="section-head">
+            <h2>Pilih template sesuai cara Anda mencatat stok.</h2>
+            <p>Satu produk berisi template, web app, dan panduan deploy. Harga berbeda mengikuti tingkat kompleksitas alur pencatatan.</p>
+        </div>
+
+        <?php if ($products === []): ?>
+            <div class="panel">
+                <div class="empty-state">
+                    <h3>Belum ada template aktif</h3>
+                    <p>Produk akan tampil di sini setelah admin menambahkannya dari dashboard.</p>
+                    <a class="btn btn-ghost" href="<?= site_url('admin/login') ?>">Masuk dashboard</a>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="product-list">
+                <?php foreach ($products as $index => $product): ?>
+                    <article class="product-row">
+                        <div class="product-row-main">
+                            <h3><a href="<?= site_url('produk/' . $product['slug']) ?>"><?= esc($product['nama']) ?></a></h3>
+                            <p><?= esc(mb_substr(strip_tags($product['deskripsi']), 0, 150)) ?><?= mb_strlen(strip_tags($product['deskripsi'])) > 150 ? '...' : '' ?></p>
+                        </div>
+                        <div class="product-meta">
+                            <span class="badge badge-<?= complexity_tone($product['tingkat_kompleksitas']) ?>"><?= esc($product['tingkat_kompleksitas']) ?></span>
+                        </div>
+                        <div class="product-price"><?= rupiah($product['harga']) ?></div>
+                        <div class="product-cta">
+                            <a class="btn btn-ghost btn-small" href="<?= site_url('produk/' . $product['slug']) ?>">Lihat detail</a>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</section>
+
+<section class="section" id="cara-kerja">
+    <div class="wrap feature-grid">
+        <div class="feature-copy">
+            <h2>Dibuat untuk stok yang bergerak, bukan untuk presentasi.</h2>
+            <p>Template mencatat barang masuk dan keluar, lalu menghitung sisa stok. Anda menyalinnya ke Google Drive sendiri, jadi data tetap berada di akun Anda. Panduan deploy disiapkan untuk pembeli yang belum pernah memakai Apps Script.</p>
+            <p>Yang perlu Anda siapkan: akun Google dan waktu untuk mengikuti panduan. Tidak perlu menulis kode.</p>
+            <?php if ($featured !== null && $featuredFeatures !== []): ?>
+                <ul class="feature-check-list" style="margin-top: 24px;">
+                    <?php foreach ($featuredFeatures as $fitur): ?>
+                        <li><?= esc($fitur) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+
+        <div class="steps" aria-label="Empat langkah membeli sampai deploy">
+            <div class="step">
+                <div class="step-number" aria-hidden="true"></div>
+                <h3>Pilih template</h3>
+                <p>Buka detail produk, cek isi template, lalu lanjut ke checkout.</p>
+            </div>
+            <div class="step">
+                <div class="step-number" aria-hidden="true"></div>
+                <h3>Bayar sesuai metode</h3>
+                <p>Pilih VA Permata, GoPay, atau QRIS. Pembayaran diproses oleh gateway.</p>
+            </div>
+            <div class="step">
+                <div class="step-number" aria-hidden="true"></div>
+                <h3>Terima email otomatis</h3>
+                <p>Setelah webhook menyatakan pembayaran berhasil, invoice dan link akses dikirim ke email Anda.</p>
+            </div>
+            <div class="step">
+                <div class="step-number" aria-hidden="true"></div>
+                <h3>Salin dan deploy</h3>
+                <p>Ikuti video dan panduan teks untuk menyalin template serta men-deploy web app di akun Google Anda.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="faq">
+    <div class="wrap feature-grid">
+        <div class="feature-copy">
+            <h2>Pertanyaan yang muncul sebelum membeli.</h2>
+            <p>Jawaban di bawah mengikuti alur produk dan pengiriman akses yang sebenarnya. Jika ada yang belum terjawab, cek halaman status pesanan atau hubungi admin lewat email invoice.</p>
+        </div>
+
+        <div class="faq">
+            <details>
+                <summary>Apakah saya perlu akun Google?</summary>
+                <div class="faq-answer">Ya. Template disalin ke Google Drive Anda dan web app di-deploy dari akun Google sendiri. Tanpa akun Google, template tidak bisa dipakai.</div>
+            </details>
+            <details>
+                <summary>Apakah harus bisa coding untuk deploy?</summary>
+                <div class="faq-answer">Tidak. Panduan video dan teks menunjukkan langkah menyalin template dan men-deploy web app. Anda hanya perlu mengikuti urutan langkahnya.</div>
+            </details>
+            <details>
+                <summary>Kapan link template dikirim?</summary>
+                <div class="faq-answer">Setelah gateway mengirim notifikasi pembayaran berhasil ke backend. Redirect dari halaman bayar tidak dianggap bukti bayar. Email biasanya diproses dalam waktu singkat setelah pembayaran terverifikasi.</div>
+            </details>
+            <details>
+                <summary>Apakah akses template punya masa berlaku?</summary>
+                <div class="faq-answer">Tidak. Akses berlaku selamanya. Link template tidak memiliki masa kedaluwarsa, tetapi hanya dikirim ke email pembeli setelah pembayaran berhasil.</div>
+            </details>
+            <details>
+                <summary>Bagaimana jika email tidak masuk?</summary>
+                <div class="faq-answer">Periksa folder spam terlebih dahulu, lalu buka halaman cek status pesanan memakai nomor pesanan dan email. Jika email tercatat gagal, admin bisa mengirim ulang dari dashboard.</div>
+            </details>
+            <details>
+                <summary>Metode pembayaran apa yang tersedia?</summary>
+                <div class="faq-answer">VA Permata, GoPay, dan QRIS. Dana masuk ke rekening Permata atau GoPay milik penjual melalui gateway pembayaran.</div>
+            </details>
+            <details>
+                <summary>Apakah ada refund?</summary>
+                <div class="faq-answer">Kebijakan refund belum ditetapkan. Jika ada kendala setelah pembelian, hubungi admin melalui email yang tertera di invoice agar bisa ditinjau.</div>
+            </details>
+        </div>
+    </div>
+</section>
+
+<section class="cta-band">
+    <div class="wrap cta-band-inner">
+        <div>
+            <h2>Siap menyiapkan stok yang lebih rapi?</h2>
+            <p>Pilih template, bayar, lalu ikuti panduan deploy. Akses dikirim ke email setelah pembayaran terverifikasi.</p>
+        </div>
+        <a class="btn btn-gold" href="<?= site_url('produk') ?>">Buka katalog</a>
+    </div>
+</section>
