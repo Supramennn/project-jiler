@@ -104,4 +104,15 @@ class Cookie extends BaseConfig
      * @see https://tools.ietf.org/html/rfc2616#section-2.2
      */
     public bool $raw = false;
+
+    /**
+     * On Vercel the site is HTTPS even though the container receives HTTP,
+     * so production sets COOKIE_SECURE=true.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->secure = filter_var(env('COOKIE_SECURE', $this->secure), FILTER_VALIDATE_BOOLEAN);
+    }
 }

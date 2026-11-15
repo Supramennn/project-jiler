@@ -87,4 +87,22 @@ class Paths
      * value - the directory should not be publicly accessible.
      */
     public string $envDirectory = __DIR__ . '/../../';
+
+    /**
+     * Lets read-only runtimes (for example Vercel Functions) point writes to
+     * /tmp. DotEnv is not loaded yet when this class is constructed, so read
+     * the process environment directly.
+     */
+    public function __construct()
+    {
+        $writable = getenv('WRITABLE_PATH');
+
+        if ($writable === false || $writable === '') {
+            $writable = $_SERVER['WRITABLE_PATH'] ?? $_ENV['WRITABLE_PATH'] ?? '';
+        }
+
+        if (is_string($writable) && $writable !== '') {
+            $this->writableDirectory = rtrim($writable, '\\/');
+        }
+    }
 }

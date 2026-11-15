@@ -77,7 +77,7 @@ class Payment extends BaseController
 
     public function simulate(string $orderId)
     {
-        if (config('Payment')->effectiveDriver() !== 'sandbox') {
+        if (ENVIRONMENT === 'production' || config('Payment')->effectiveDriver() !== 'sandbox') {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Simulasi hanya tersedia pada mode sandbox.');
         }
 

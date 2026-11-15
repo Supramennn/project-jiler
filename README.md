@@ -11,6 +11,7 @@ Proyek ini dikembangkan oleh **Nexus Diji**. Nama usaha sengaja dikosongkan kare
 - Pembayaran lokal: sandbox.
 - Email lokal: file, tersimpan di `writable/emails`.
 - Database lokal: SQLite di `writable/database.sqlite`.
+- Produksi: Vercel (container FrankenPHP) + Neon PostgreSQL, sesi database.
 - Animasi: hero, reveal saat scroll, hover, drawer, dan grafik dashboard.
 
 ## Fitur
@@ -65,7 +66,8 @@ Proyek ini dikembangkan oleh **Nexus Diji**. Nama usaha sengaja dikosongkan kare
 
 - PHP 8.2 atau lebih baru.
 - CodeIgniter 4.7.
-- SQLite untuk lokal, MySQL atau PostgreSQL untuk produksi.
+- SQLite untuk lokal, PostgreSQL untuk produksi di Neon.
+- Docker + FrankenPHP untuk deploy ke Vercel.
 - CSS dan JavaScript tanpa framework.
 - Google Fonts: Cormorant Garamond dan Plus Jakarta Sans.
 
@@ -74,14 +76,16 @@ Proyek ini dikembangkan oleh **Nexus Diji**. Nama usaha sengaja dikosongkan kare
 ```text
 app/
   Commands/         Perintah email:retry
-  Config/           Store, Payment, Mailer, Routes, Filters
-  Controllers/      Halaman publik dan admin
+  Config/           Store, Payment, Mailer, Database, Session, Routes, Filters
+  Controllers/      Halaman publik, admin, webhook, dan cron
   Database/         Migrasi dan ProductSeeder
   Filters/          AdminAuth
   Helpers/          Format rupiah, tanggal, nama toko, status
   Libraries/        PaymentService, WebhookService, OrderFulfillment, OrderMailer, Mailer
   Models/           Product, Order, OrderEvent, EmailLog
   Views/            Publik, admin, email, invoice
+docker/
+  php.ini           Konfigurasi PHP produksi
 public/
   assets/css/       site.css dan admin.css
   assets/js/        site.js
@@ -89,6 +93,9 @@ writable/
   database.sqlite   Database lokal
   emails/           Email mode file
   logs/             Log aplikasi
+Dockerfile          Image FrankenPHP untuk Vercel
+Caddyfile           Web server container
+docker-entrypoint.sh
 ```
 
 ## Menjalankan di lokal
@@ -184,12 +191,28 @@ INVOICE_PREFIX = 'INV'
 | Variabel | Keterangan |
 | --- | --- |
 | `CI_ENVIRONMENT` | `development` atau `production` |
-| `app.baseURL` | Alamat website, harus diakhiri garis miring |
+| `APP_BASE_URL` | Alamat publik website, misalnya `https://toko.vercel.app` |
+| `app.baseURL` | Alamat lokal, harus diakhiri garis miring |
 | `STORE_NAME` | Nama usaha, boleh kosong selama pengembangan |
 | `STORE_PRODUCER` | Kredit produsen, default Nexus Diji |
 | `STORE_EMAIL` | Email kontak yang tampil di invoice dan footer |
 | `STORE_ADDRESS` | Alamat usaha di invoice dan email |
 | `INVOICE_PREFIX` | Awalan nomor invoice, default `INV` |
+| `DATABASE_URL` | Connection string Neon; `DATABASE_URL_UNPOOLED` dipakai lebih dulu bila ada |
+| `DB_DRIVER` | `Postgre`, `MySQLi`, atau `SQLite3` |
+| `DB_HOST` | Host database bila tidak memakai `DATABASE_URL` |
+| `DB_PORT` | Port database, default 5432 untuk PostgreSQL |
+| `DB_DATABASE` | Nama database |
+| `DB_USERNAME` | User database |
+| `DB_PASSWORD` | Kata sandi database |
+| `DB_SSLMODE` | Mode SSL PostgreSQL, isi `require` untuk Neon |
+| `DB_DEBUG` | `false` di produksi agar detail error tidak tampil |
+| `SESSION_DRIVER` | `file` untuk lokal, `database` untuk Vercel |
+| `SESSION_TABLE` | Nama tabel sesi, default `ci_sessions` |
+| `SESSION_COOKIE_NAME` | Nama cookie sesi |
+| `SESSION_EXPIRATION` | Umur sesi dalam detik |
+| `COOKIE_SECURE` | `true` bila situs hanya lewat HTTPS |
+| `CRON_SECRET` | Token untuk endpoint kirim ulang email |
 | `PAYMENT_DRIVER` | `sandbox` atau `midtrans` |
 | `MIDTRANS_SERVER_KEY` | Server key Midtrans |
 | `MIDTRANS_CLIENT_KEY` | Client key Midtrans |
@@ -212,6 +235,202 @@ php -r "echo password_hash('kata-sandi-baru', PASSWORD_DEFAULT), PHP_EOL;"
 ```
 
 Salin hasilnya ke `APP_ADMIN_PASSWORD_HASH`.
+
+## Deploy ke Vercel + Neon
+
+Vercel tidak menjalankan PHP secara langsung. Proyek ini memakai **Container preset** resmi Vercel: `Dockerfile` berisi FrankenPHP, lalu Vercel menjalankan image itu sebagai Function. SQLite tidak bisa dipakai karena filesystem Function bersifat sementara dan tidak dibagi antar instance. Karena itu produksi memakai Neon PostgreSQL dan sesi database.
+
+Berkas deploy yang sudah disiapkan:
+
+- `Dockerfile`: PHP 8.4 + FrankenPHP + ekstensi `intl`, `pdo_pgsql`, `pgsql`.
+- `Caddyfile`: menyajikan `public/` dan meneruskan request PHP.
+- `docker-entrypoint.sh`: menyiapkan folder tulis di `/tmp`.
+- `docker/php.ini`: konfigurasi produksi.
+- `app/Database/Migrations/2026-11-14-000001_CreateCiSessionsTable.php`: tabel `ci_sessions`.
+- `.env.example`: daftar variabel produksi.
+
+### 1. Siapkan Neon
+
+1. Buat akun dan project di [neon.tech](https://neon.tech).
+2. Pilih region Singapore (`ap-southeast-1`) agar dekat dengan pengguna dan region Function Vercel.
+3. Buka **Connect**, matikan **Connection pooling**, lalu salin connection string **direct**:
+
+   ```text
+   postgresql://user:password@ep-xxxx.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+   ```
+
+   Jangan memakai host `-pooler`. Sesi database CodeIgniter memakai PostgreSQL advisory lock, sedangkan PgBouncer transaction pooling bisa memindahkan lock ke koneksi lain.
+
+4. Simpan string itu sebagai `DATABASE_URL`. Jangan commit nilainya. Jika memakai integrasi Neon-Vercel, biarkan integrasi mengisi `DATABASE_URL` dan `DATABASE_URL_UNPOOLED`; aplikasi memilih `DATABASE_URL_UNPOOLED` lebih dulu. Jika hanya ada host `-pooler`, aplikasi otomatis memakai endpoint direct-nya.
+
+Neon gratis bisa tidur saat tidak ada trafik. Request pertama setelah idle bisa terasa lambat beberapa detik.
+
+### 2. Jalankan migrasi ke Neon
+
+Jalankan dari folder proyek. Perintah ini hanya memakai `DATABASE_URL` pada proses tersebut, sehingga `.env` lokal tetap SQLite.
+
+**PowerShell:**
+
+```powershell
+$env:DATABASE_URL = 'postgresql://user:password@ep-xxxx.ap-southeast-1.aws.neon.tech/neondb?sslmode=require'
+$env:DB_DRIVER = 'Postgre'
+php spark migrate
+php spark db:seed ProductSeeder
+php spark migrate:status
+Remove-Item Env:DATABASE_URL
+Remove-Item Env:DB_DRIVER
+```
+
+**Bash:**
+
+```bash
+DATABASE_URL='postgresql://...' DB_DRIVER=Postgre php spark migrate
+DATABASE_URL='postgresql://...' DB_DRIVER=Postgre php spark db:seed ProductSeeder
+DATABASE_URL='postgresql://...' DB_DRIVER=Postgre php spark migrate:status
+```
+
+Migrasi membuat tabel commerce dan `ci_sessions`. Seeder mengisi tiga produk contoh. Jika database Neon sudah berisi data, cukup jalankan `php spark migrate`.
+
+### 3. Hubungkan proyek ke Vercel
+
+**Lewat CLI:**
+
+```bash
+npm install -g vercel
+vercel login
+vercel link
+vercel project update --framework container --yes
+vercel deploy --prod
+```
+
+`vercel project update` wajib bila project sebelumnya terdeteksi sebagai framework lain. Tanpa itu, Vercel tidak membangun `Dockerfile` dan situs tetap tidak bisa menjalankan PHP.
+
+**Lewat dashboard/Git:**
+
+1. Import repository ke Vercel.
+2. Pada **Framework Preset**, pilih **Container**.
+3. Biarkan **Root Directory** kosong karena `Dockerfile` ada di root.
+4. Tambahkan environment variable produksi, lalu deploy.
+
+### 4. Environment variable Vercel
+
+Tambahkan di **Project → Settings → Environment Variables**. Nama variabel Vercel sebaiknya huruf besar dan garis bawah; jangan memakai nama bertitik seperti `app.baseURL`.
+
+Minimum yang harus diisi untuk produksi:
+
+```dotenv
+CI_ENVIRONMENT = production
+APP_BASE_URL = 'https://domain-anda.com'
+APP_KEY = 'kunci-acak-minimal-32-karakter'
+
+DATABASE_URL = 'postgresql://user:password@ep-xxxx.ap-southeast-1.aws.neon.tech/neondb?sslmode=require'
+DB_DRIVER = Postgre
+DB_DEBUG = false
+
+SESSION_DRIVER = database
+SESSION_TABLE = ci_sessions
+SESSION_COOKIE_NAME = nexus_session
+SESSION_EXPIRATION = 7200
+COOKIE_SECURE = true
+
+STORE_NAME = 'Nama Toko Anda'
+STORE_EMAIL = 'email-anda@gmail.com'
+STORE_ADDRESS = 'Alamat usaha'
+STORE_PRODUCER = 'Nexus Diji'
+INVOICE_PREFIX = INV
+
+APP_ADMIN_NAME = 'Admin'
+APP_ADMIN_EMAIL = 'email-admin@gmail.com'
+APP_ADMIN_PASSWORD_HASH = '$2y$12$...'
+ADMIN_NOTIFY_EMAIL = 'email-admin@gmail.com'
+
+PAYMENT_DRIVER = midtrans
+MIDTRANS_SERVER_KEY = '...'
+MIDTRANS_CLIENT_KEY = '...'
+MIDTRANS_IS_PRODUCTION = true
+
+MAIL_DRIVER = smtp
+MAIL_FROM_EMAIL = 'email-anda@gmail.com'
+MAIL_FROM_NAME = 'Nama Toko Anda'
+MAIL_SMTP_HOST = 'smtp.gmail.com'
+MAIL_SMTP_PORT = 587
+MAIL_SMTP_USER = 'email-anda@gmail.com'
+MAIL_SMTP_PASS = 'app-password-gmail'
+MAIL_SMTP_CRYPTO = tls
+
+CRON_SECRET = 'token-acak-panjang'
+```
+
+Catatan:
+
+- `APP_BASE_URL` boleh dikosongkan pada deploy pertama. Aplikasi memakai `VERCEL_URL` atau `VERCEL_PROJECT_PRODUCTION_URL` sebagai cadangan. Setelah domain final dipasang, isi `APP_BASE_URL` lalu redeploy.
+- Perubahan environment variable baru berlaku setelah redeploy.
+- Gunakan **Preview** environment terpisah untuk uji Midtrans sandbox. Jangan mengaktifkan `PAYMENT_DRIVER=sandbox` di Production karena tombol simulasi bisa melewati pembayaran sungguhan.
+- Untuk Production, `MIDTRANS_IS_PRODUCTION=true` dan `PAYMENT_DRIVER=midtrans`.
+
+### 5. Verifikasi setelah deploy
+
+1. Buka `/` dan `/produk`. Keduanya harus merespons halaman toko, bukan 404 atau halaman kosong.
+2. Buka `/admin/login`, masuk, lalu buka **Pesanan** dan **Produk**. Jika login berhasil dan sesi bertahan, konfigurasi database dan `ci_sessions` benar.
+3. Daftarkan `https://domain-anda.com/webhook/midtrans` sebagai **Payment Notification URL** di Midtrans.
+4. Lakukan satu transaksi sandbox di Preview deployment, lalu satu transaksi nominal kecil di Production.
+5. Pastikan email berisi invoice dan link akses masuk, dan invoice menampilkan `LUNAS`.
+6. Uji endpoint retry:
+
+   ```powershell
+   curl.exe -i -H "Authorization: Bearer TOKEN_CRON" https://domain-anda.com/cron/retry-email
+   ```
+
+   Respons normal:
+
+   ```json
+   {"ok":true,"processed":0,"sent":0,"failed":0}
+   ```
+
+   Tanpa token, endpoint harus membalas `403`. Jika `CRON_SECRET` belum diatur, endpoint membalas `503`.
+
+### 6. Jadwalkan kirim ulang email
+
+Endpoint `GET /cron/retry-email` memproses pesanan `paid` yang emailnya belum terkirim. Endpoint ini memakai header:
+
+```text
+Authorization: Bearer <CRON_SECRET>
+```
+
+atau:
+
+```text
+X-Cron-Secret: <CRON_SECRET>
+```
+
+**Vercel Hobby:** cron bawaan Vercel maksimal sekali sehari. Untuk retry tiap 15 menit, pakai scheduler eksternal gratis seperti cron-job.org, arahkan ke URL endpoint, dan tambahkan header `Authorization`. Jika retry harian cukup, tambahkan cron harian di `vercel.json`.
+
+**Vercel Pro:** boleh memakai jadwal per menit. Contoh `vercel.json`:
+
+```json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    { "path": "/cron/retry-email", "schedule": "*/15 * * * *" }
+  ]
+}
+```
+
+Vercel otomatis mengirim header `Authorization: Bearer <CRON_SECRET>` pada cron bila variabel `CRON_SECRET` diisi.
+
+Tanpa scheduler, email gagal tetap bisa dikirim ulang manual dari dashboard **Pesanan → Kirim ulang email gagal**.
+
+### 7. Build container secara lokal (opsional)
+
+Jika Docker Desktop terpasang:
+
+```bash
+docker build -t nexus-diji .
+docker run --rm -p 8080:80 --env-file .env.production nexus-diji
+```
+
+Buka `http://localhost:8080`. Build container belum diuji di mesin pengembangan ini karena Docker tidak tersedia.
+
 
 ## Alur pengujian end-to-end
 
@@ -261,6 +480,8 @@ Perintah selesai dengan kode `0` jika semua email berhasil atau tidak ada yang p
 
 Perintah ini tidak memproses pesanan `pending` dan tidak mengirim akses sebelum pembayaran terverifikasi.
 
+Di Vercel, `php spark` tidak bisa dijalankan dari dashboard. Gunakan endpoint `/cron/retry-email` dengan `CRON_SECRET` seperti dijelaskan pada bagian **Deploy ke Vercel + Neon**.
+
 ## Pengujian yang sudah dilakukan
 
 - Semua halaman publik merespons `200`.
@@ -285,30 +506,78 @@ Perintah ini tidak memproses pesanan `pending` dan tidak mengirim akses sebelum 
 - Animasi hero, reveal, hover, drawer, dan grafik diuji di Chromium pada 360 dan 1440 piksel. Tidak ada error konsol.
 - Animasi login admin (cap, garis ledger, garis pindai, dan form bertahap) diuji pada 360, 1024, dan 1440 piksel. Login tetap berhasil dan tidak ada error konsol.
 - `prefers-reduced-motion` mematikan animasi dan delay tanpa menyembunyikan konten.
+- Migrasi `ci_sessions` berhasil membuat tabel sesi pada SQLite lokal.
+- Endpoint `/cron/retry-email` membalas `503` tanpa `CRON_SECRET`, `403` untuk token salah, dan `200` untuk header `Authorization: Bearer` maupun `X-Cron-Secret`.
+- Konfigurasi produksi diuji lewat probe sementara: `DATABASE_URL` Neon terbaca sebagai PostgreSQL, password ter-decode, `sslmode=require` dipakai, `APP_BASE_URL` dinormalisasi, sesi memilih `PostgreHandler`, dan `WRITABLE_PATH` mengarah ke folder tulis alternatif.
+- Build image container belum diuji di mesin ini karena Docker tidak tersedia.
 
 ## Checklist produksi
 
+- Buat project Neon di region Singapore dan salin connection string **direct** (bukan `-pooler`).
+- Jalankan `php spark migrate` dan `php spark db:seed ProductSeeder` ke Neon.
+- Set **Framework Preset** Vercel ke **Container** dan pastikan `Dockerfile` ada di root.
+- Set `CI_ENVIRONMENT = production`, `APP_BASE_URL` ke domain HTTPS, dan `DB_DEBUG = false`.
+- Isi `DATABASE_URL`, `DB_DRIVER = Postgre`, `SESSION_DRIVER = database`, dan `COOKIE_SECURE = true`.
 - Isi `STORE_NAME`, `STORE_EMAIL`, `STORE_ADDRESS`, dan `INVOICE_PREFIX`.
-- Set `CI_ENVIRONMENT = production` dan `app.baseURL` ke domain HTTPS.
-- Pindahkan database ke MySQL atau PostgreSQL, lalu jalankan migrasi.
-- Isi server key dan client key Midtrans, set `PAYMENT_DRIVER = midtrans`.
+- Isi server key dan client key Midtrans, set `PAYMENT_DRIVER = midtrans` dan `MIDTRANS_IS_PRODUCTION = true`.
 - Daftarkan `https://domain-anda/webhook/midtrans` sebagai Payment Notification URL di Midtrans.
 - Set `MAIL_DRIVER = smtp` dan isi kredensial Gmail App Password.
 - Set `MAIL_FROM_EMAIL` ke alamat Gmail yang sama dengan `MAIL_SMTP_USER`.
 - Ganti `APP_KEY` dengan nilai acak baru, minimal 32 karakter.
 - Ganti email admin dan hash kata sandi admin.
 - Ganti semua link template, video, dan panduan yang masih memakai `example.com` dari menu **Produk**.
-- Aktifkan HTTPS dan cookie sesi `Secure`.
-- Pastikan folder `writable/` bisa ditulis proses PHP, tetapi tidak bisa diakses langsung dari browser.
-- Jadwalkan `php spark email:retry` setiap 15 menit.
-- Atur pencadangan database dan folder email.
-- Uji satu pembayaran sandbox, lalu satu pembayaran produksi nominal kecil sebelum promosi.
+- Isi `CRON_SECRET`, lalu jadwalkan `GET /cron/retry-email` setiap 15 menit.
+- Atur region Function Vercel sedekat mungkin dengan Neon, misalnya Singapore.
+- Uji satu pembayaran sandbox di Preview, lalu satu pembayaran produksi nominal kecil sebelum promosi.
+- Atur pencadangan database Neon. Folder `writable/` di Vercel hanya sementara.
 
 Integrasi Midtrans live dan SMTP Gmail belum diuji karena belum ada kredensial asli. Mode lokal memakai sandbox dan file.
 
 ## Troubleshooting
 
-### Login gagal atau sesi hilang
+### Deploy Vercel masih 404 atau halaman statis
+
+Framework preset belum **Container**, atau `Dockerfile` tidak terdeteksi. Jalankan:
+
+```bash
+vercel project update --framework container --yes
+vercel deploy --prod
+```
+
+Pastikan `Dockerfile` dan `Caddyfile` ada di root project, bukan di subfolder.
+
+### Vercel error 500 `The WRITEPATH is not set correctly`
+
+Folder tulis tidak ada. Image sudah menjalankan `docker-entrypoint.sh` yang membuat `/tmp/writable`. Pastikan `WRITABLE_PATH=/tmp/writable` dan entrypoint tidak dihapus dari `Dockerfile`.
+
+### Database tidak bisa connect di Vercel
+
+- Pastikan `DATABASE_URL` memakai host **direct** Neon, bukan `-pooler`.
+- Pastikan URL menyertakan `?sslmode=require` atau set `DB_SSLMODE = require`.
+- Pastikan project Neon tidak dihapus dan masih aktif.
+- Cek `DB_DRIVER = Postgre` dan `DB_DEBUG = false`.
+- Neon gratis bisa tidur; request pertama bisa lambat.
+
+### Login berhasil tetapi kembali ke halaman login
+
+- Pastikan `SESSION_DRIVER = database` dan tabel `ci_sessions` sudah dibuat lewat migrasi.
+- Pastikan `APP_BASE_URL` sama dengan domain yang dibuka.
+- Jika memakai domain kustom, set `COOKIE_SECURE = true` dan redeploy.
+- Jangan mencampur domain `vercel.app` dan domain kustom dalam satu pengujian login.
+
+### Endpoint cron membalas 503
+
+`CRON_SECRET` belum diisi di environment Vercel. Isi, lalu redeploy.
+
+### Endpoint cron membalas 403
+
+Header tidak cocok. Gunakan `Authorization: Bearer <CRON_SECRET>` atau `X-Cron-Secret: <CRON_SECRET>`.
+
+### Function Vercel ditolak karena ukuran image
+
+Batas image Function adalah 250 MB tidak terkompresi. Image ini memakai FrankenPHP Alpine dan hanya dependensi produksi untuk menekan ukuran. Set `VERCEL_ANALYZE_BUILD_OUTPUT=1` untuk melihat ukuran tiap bagian, lalu hapus file yang tidak perlu dari build context.
+
+### Login gagal atau sesi hilang di lokal
 
 Buka `http://localhost:8080`, bukan `http://127.0.0.1:8080`. Alamat harus sama dengan `app.baseURL`.
 
@@ -322,7 +591,7 @@ Signature tidak cocok. Periksa `APP_KEY` untuk sandbox atau server key Midtrans 
 
 ### Email gagal terkirim
 
-Buka detail pesanan di dashboard, periksa log email, lalu klik **Kirim ulang email**. Untuk retry massal, jalankan `php spark email:retry`.
+Buka detail pesanan di dashboard, periksa log email, lalu klik **Kirim ulang email**. Untuk retry massal di lokal, jalankan `php spark email:retry`. Di Vercel, panggil `/cron/retry-email` dengan token cron.
 
 ### Ingin mengulang dari database bersih
 
@@ -331,7 +600,7 @@ php spark migrate:refresh --all
 php spark db:seed ProductSeeder
 ```
 
-Perintah ini menghapus pesanan, log email, dan produk, lalu mengisi ulang tiga produk contoh.
+Perintah ini menghapus pesanan, log email, dan produk, lalu mengisi ulang tiga produk contoh. Jangan jalankan saat `DATABASE_URL` mengarah ke Neon produksi.
 
 ### Perubahan CSS atau JavaScript tidak terlihat
 
@@ -339,12 +608,16 @@ Muat ulang dengan `Ctrl + F5`. Pastikan berkas di `public/assets` tidak di-cache
 
 ## Batasan
 
-- Satu akun admin dari `.env`, belum ada peran atau multi-pengguna.
+- Satu akun admin dari environment, belum ada peran atau multi-pengguna.
 - Gambar produk memakai URL, belum ada unggah berkas.
 - Invoice berupa halaman cetak browser, belum PDF server-side.
 - Email dikirim sinkron saat webhook diproses. Untuk volume besar, pindahkan ke antrean.
 - Refund dan pembatalan belum otomatis.
 - Nama usaha masih placeholder sampai `STORE_NAME` diisi.
+- Filesystem Vercel bersifat sementara. Email mode file dan log hanya ada di `/tmp` satu instance; produksi wajib memakai SMTP dan Neon.
+- Cron bawaan Vercel Hobby hanya sekali sehari. Retry 15 menit perlu scheduler eksternal atau upgrade Pro.
+- Container Runtime Vercel masih Beta, dan image Function dibatasi 250 MB tidak terkompresi.
+- Neon gratis bisa tidur saat idle, sehingga request pertama terasa lebih lambat.
 
 ## Dokumen terkait
 

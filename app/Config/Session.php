@@ -4,6 +4,8 @@ namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Session\Handlers\BaseHandler;
+use CodeIgniter\Session\Handlers\Database\MySQLiHandler;
+use CodeIgniter\Session\Handlers\Database\PostgreHandler;
 use CodeIgniter\Session\Handlers\FileHandler;
 
 class Session extends BaseConfig
@@ -125,4 +127,35 @@ class Session extends BaseConfig
      * seconds.
      */
     public int $lockMaxRetries = 300;
+
+    /**
+     * Allows Vercel deployments to use database-backed sessions without
+     * dotted environment variable names. Local development keeps file sessions.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        if (strtolower((string) env('SESSION_DRIVER', '')) !== 'database') {
+            return;
+        }
+
+        $dbDriver = strtolower((string) env('DB_DRIVER', 'postgre'));
+
+        $this->driver = str_contains($dbDriver, 'mysql')
+            ? MySQLiHandler::class
+            : PostgreHandler::class;
+
+        $this->savePath = (string) env('SESSION_TABLE', 'ci_sessions');
+        $this->DBGroup  = (string) env('SESSION_DB_GROUP', 'default');
+        $this->matchIP  = filter_var(env('SESSION_MATCH_IP', $this->matchIP), FILTER_VALIDATE_BOOLEAN);
+
+        $this->cookieName = (string) env('SESSION_COOKIE_NAME', $this->cookieName);
+
+        $expiration = env('SESSION_EXPIRATION');
+
+        if ($expiration !== null && $expiration !== false && $expiration !== '') {
+            $this->expiration = max(0, (int) $expiration);
+        }
+    }
 }

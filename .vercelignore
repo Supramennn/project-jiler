@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+vendor
+node_modules
+writable/database.sqlite
+writable/cache
+writable/debugbar
+writable/emails
+writable/logs
+writable/session
+writable/uploads
+README.md
+DESIGN.md
+PRD*

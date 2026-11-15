@@ -29,6 +29,8 @@ $routes->get('privasi', 'Legal::privacy');
 
 $routes->post('webhook/midtrans', 'Webhook::midtrans');
 
+$routes->get('cron/retry-email', 'Cron::retryEmails');
+
 $routes->get('admin/login', 'Admin\Auth::login');
 $routes->post('admin/login', 'Admin\Auth::attempt');
 $routes->post('admin/logout', 'Admin\Auth::logout');

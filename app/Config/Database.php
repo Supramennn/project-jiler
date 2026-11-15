@@ -194,11 +194,121 @@ class Database extends Config
     {
         parent::__construct();
 
+        $this->applyEnvironmentOverrides();
+
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
         // we don't overwrite live data on accident.
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
         }
+    }
+
+    /**
+     * Supports Neon/PostgreSQL without dotted environment variable names,
+     * which are awkward to set in Vercel.
+     */
+    private function applyEnvironmentOverrides(): void
+    {
+        $portSet = false;
+        $url     = (string) (env('DATABASE_URL_UNPOOLED')
+            ?: env('POSTGRES_URL_NON_POOLING')
+            ?: env('DATABASE_URL')
+            ?: env('POSTGRES_URL')
+            ?: '');
+
+        if ($url !== '') {
+            $parts = parse_url($url);
+
+            if (is_array($parts)) {
+                $host = (string) ($parts['host'] ?? '');
+
+                // CI4 database sessions use PostgreSQL advisory locks.
+                // PgBouncer transaction pooling can move those locks to
+                // another backend, so prefer Neon's direct endpoint.
+                if (str_contains($host, '-pooler.')) {
+                    $host = str_replace('-pooler.', '.', $host);
+                }
+
+                $this->default['DBDriver'] = 'Postgre';
+                $this->default['hostname'] = $host;
+                $this->default['port']     = (int) ($parts['port'] ?? 5432);
+                $this->default['username'] = urldecode((string) ($parts['user'] ?? ''));
+                $this->default['password'] = urldecode((string) ($parts['pass'] ?? ''));
+                $this->default['database'] = ltrim((string) ($parts['path'] ?? ''), '/');
+                $this->default['charset']  = 'utf8';
+                $this->default['DBCollat'] = '';
+                $portSet                   = true;
+
+                parse_str((string) ($parts['query'] ?? ''), $query);
+
+                if (isset($query['sslmode'])) {
+                    $this->default['sslmode'] = (string) $query['sslmode'];
+                }
+            }
+        }
+
+        $overrides = [
+            'DB_DRIVER'   => 'DBDriver',
+            'DB_HOST'     => 'hostname',
+            'DB_PORT'     => 'port',
+            'DB_DATABASE' => 'database',
+            'DB_USERNAME' => 'username',
+            'DB_PASSWORD' => 'password',
+            'DB_PREFIX'   => 'DBPrefix',
+            'DB_SSLMODE'  => 'sslmode',
+        ];
+
+        foreach ($overrides as $envName => $key) {
+            $value = env($envName);
+
+            if ($value === null || $value === false || $value === '') {
+                continue;
+            }
+
+            if ($key === 'DBDriver') {
+                $value = $this->normalizeDriver((string) $value);
+            } elseif ($key === 'port') {
+                $value = (int) $value;
+                $portSet = true;
+            }
+
+            $this->default[$key] = $value;
+        }
+
+        $debug = env('DB_DEBUG');
+
+        if ($debug !== null && $debug !== false && $debug !== '') {
+            $this->default['DBDebug'] = filter_var($debug, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        if (($this->default['DBDriver'] ?? '') === 'Postgre') {
+            $this->default['charset']  = 'utf8';
+            $this->default['DBCollat'] = '';
+
+            if (! $portSet) {
+                $currentPort = (int) ($this->default['port'] ?? 0);
+
+                if ($currentPort === 0 || $currentPort === 3306) {
+                    $this->default['port'] = 5432;
+                }
+            }
+
+            $host = (string) ($this->default['hostname'] ?? '');
+
+            if (! isset($this->default['sslmode']) && str_ends_with($host, '.neon.tech')) {
+                $this->default['sslmode'] = 'require';
+            }
+        }
+    }
+
+    private function normalizeDriver(string $driver): string
+    {
+        return match (strtolower($driver)) {
+            'pgsql', 'postgres', 'postgresql', 'postgre' => 'Postgre',
+            'mysql', 'mysqli'                            => 'MySQLi',
+            'sqlite', 'sqlite3'                          => 'SQLite3',
+            default                                      => $driver,
+        };
     }
 }

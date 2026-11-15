@@ -199,4 +199,33 @@ class App extends BaseConfig
      * @see http://www.w3.org/TR/CSP/
      */
     public bool $CSPEnabled = false;
+
+    /**
+     * Resolves the public URL from a portable environment variable and falls
+     * back to Vercel's deployment hostnames.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $base = trim((string) env('APP_BASE_URL', ''));
+
+        if ($base === '' && getenv('VERCEL') !== false) {
+            $host = (string) (env('VERCEL_PROJECT_PRODUCTION_URL') ?: env('VERCEL_URL') ?: '');
+
+            if ($host !== '') {
+                $base = 'https://' . preg_replace('#^https?://#i', '', $host);
+            }
+        }
+
+        if ($base === '') {
+            return;
+        }
+
+        if (! preg_match('#^https?://#i', $base)) {
+            $base = 'https://' . $base;
+        }
+
+        $this->baseURL = rtrim($base, '/') . '/';
+    }
 }
