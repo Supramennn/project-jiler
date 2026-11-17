@@ -243,7 +243,8 @@ Vercel tidak menjalankan PHP secara langsung. Proyek ini memakai **Container pre
 Berkas deploy yang sudah disiapkan:
 
 - `Dockerfile`: PHP 8.4 + FrankenPHP + ekstensi `intl`, `pdo_pgsql`, `pgsql`.
-- `Caddyfile`: menyajikan `public/` dan meneruskan request PHP.
+- `Caddyfile`: menyajikan `public/` di port 80 tanpa auto-HTTPS, lalu meneruskan request PHP.
+- `Dockerfile` menyalin `Caddyfile` ke `/etc/caddy/Caddyfile`. Tanpa langkah ini FrankenPHP memakai config bawaan image dan dapat terjadi redirect `308` berulang.
 - `docker-entrypoint.sh`: menyiapkan folder tulis di `/tmp`.
 - `docker/php.ini`: konfigurasi produksi.
 - `app/Database/Migrations/2026-11-14-000001_CreateCiSessionsTable.php`: tabel `ci_sessions`.
@@ -262,6 +263,8 @@ Berkas deploy yang sudah disiapkan:
    Jangan memakai host `-pooler`. Sesi database CodeIgniter memakai PostgreSQL advisory lock, sedangkan PgBouncer transaction pooling bisa memindahkan lock ke koneksi lain.
 
 4. Simpan string itu sebagai `DATABASE_URL`. Jangan commit nilainya. Jika memakai integrasi Neon-Vercel, biarkan integrasi mengisi `DATABASE_URL` dan `DATABASE_URL_UNPOOLED`; aplikasi memilih `DATABASE_URL_UNPOOLED` lebih dulu. Jika hanya ada host `-pooler`, aplikasi otomatis memakai endpoint direct-nya.
+
+Alternatif yang lebih cepat: pasang integrasi **Neon** dari Vercel Marketplace. Integrasi ini membuat database Neon dan mengisi `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, serta variabel `PG*`/`POSTGRES_*` ke environment Production, Preview, dan Development.
 
 Neon gratis bisa tidur saat tidak ada trafik. Request pertama setelah idle bisa terasa lambat beberapa detik.
 
@@ -304,6 +307,12 @@ vercel deploy --prod
 ```
 
 `vercel project update` wajib bila project sebelumnya terdeteksi sebagai framework lain. Tanpa itu, Vercel tidak membangun `Dockerfile` dan situs tetap tidak bisa menjalankan PHP.
+
+Jika `Caddyfile` atau `Dockerfile` baru diubah tetapi image lama masih terpakai, paksa build ulang:
+
+```bash
+vercel deploy --prod --force
+```
 
 **Lewat dashboard/Git:**
 
@@ -429,7 +438,7 @@ docker build -t nexus-diji .
 docker run --rm -p 8080:80 --env-file .env.production nexus-diji
 ```
 
-Buka `http://localhost:8080`. Build container belum diuji di mesin pengembangan ini karena Docker tidak tersedia.
+Buka `http://localhost:8080`. Build container sudah diuji lewat Vercel Container Runtime. Build lokal dengan Docker belum diuji karena Docker tidak tersedia di mesin pengembangan ini.
 
 
 ## Alur pengujian end-to-end
@@ -509,13 +518,19 @@ Di Vercel, `php spark` tidak bisa dijalankan dari dashboard. Gunakan endpoint `/
 - Migrasi `ci_sessions` berhasil membuat tabel sesi pada SQLite lokal.
 - Endpoint `/cron/retry-email` membalas `503` tanpa `CRON_SECRET`, `403` untuk token salah, dan `200` untuk header `Authorization: Bearer` maupun `X-Cron-Secret`.
 - Konfigurasi produksi diuji lewat probe sementara: `DATABASE_URL` Neon terbaca sebagai PostgreSQL, password ter-decode, `sslmode=require` dipakai, `APP_BASE_URL` dinormalisasi, sesi memilih `PostgreHandler`, dan `WRITABLE_PATH` mengarah ke folder tulis alternatif.
-- Build image container belum diuji di mesin ini karena Docker tidak tersedia.
+- Deploy produksi Vercel + Neon berhasil. `https://project-jiler.vercel.app` merespons `200` dengan `Content-Type: text/html; charset=UTF-8`.
+- Beranda produksi menampilkan tiga produk dari Neon, nama usaha masih placeholder "Nama Usaha", dan kredit "Nexus Diji".
+- Login admin produksi berhasil dan dashboard dapat dibuka, sehingga sesi PostgreSQL dan tabel `ci_sessions` bekerja.
+- Endpoint cron produksi membalas `403` tanpa token dan `200` dengan token yang benar.
+- `public/index.php` dieksekusi sebagai PHP; `/.env`, `app/Config/Database.php`, dan `composer.json` tidak dapat diakses publik.
+- Build image container dijalankan oleh Vercel Container Runtime. Build lokal dengan Docker belum diuji karena Docker tidak tersedia di mesin pengembangan.
 
 ## Checklist produksi
 
-- Buat project Neon di region Singapore dan salin connection string **direct** (bukan `-pooler`).
+- Buat project Neon di region Singapore dan salin connection string **direct** (bukan `-pooler`), atau pasang integrasi Neon dari Vercel Marketplace.
 - Jalankan `php spark migrate` dan `php spark db:seed ProductSeeder` ke Neon.
 - Set **Framework Preset** Vercel ke **Container** dan pastikan `Dockerfile` ada di root.
+- Pastikan `Dockerfile` menyalin `Caddyfile` ke `/etc/caddy/Caddyfile`; Caddy memakai `auto_https off` dan port 80.
 - Set `CI_ENVIRONMENT = production`, `APP_BASE_URL` ke domain HTTPS, dan `DB_DEBUG = false`.
 - Isi `DATABASE_URL`, `DB_DRIVER = Postgre`, `SESSION_DRIVER = database`, dan `COOKIE_SECURE = true`.
 - Isi `STORE_NAME`, `STORE_EMAIL`, `STORE_ADDRESS`, dan `INVOICE_PREFIX`.
@@ -545,6 +560,31 @@ vercel deploy --prod
 ```
 
 Pastikan `Dockerfile` dan `Caddyfile` ada di root project, bukan di subfolder.
+
+### Link Vercel mengunduh file atau redirect 308 berulang
+
+Gejalanya: membuka `https://...vercel.app` memicu unduhan `index.php`, atau browser berputar pada `308 Permanent Redirect` ke URL yang sama.
+
+- Framework Preset masih **Other**, sehingga Vercel menyajikan `public/index.php` sebagai file statis. Set ke **Container**:
+
+  ```bash
+  vercel project update --framework container --yes
+  ```
+
+- `Caddyfile` tidak dipasang ke lokasi yang dibaca FrankenPHP. Pastikan `Dockerfile` memiliki:
+
+  ```dockerfile
+  COPY Caddyfile /etc/caddy/Caddyfile
+  ```
+
+- Caddy mengaktifkan HTTPS otomatis di port 443, sedangkan Vercel mengirim trafik ke port 80. `Caddyfile` harus memakai `auto_https off` dan `:80`, bukan `:{$PORT:80}`.
+- Setelah memperbaiki, deploy ulang tanpa cache:
+
+  ```bash
+  vercel deploy --prod --force
+  ```
+
+- Periksa `Content-Type` respons. Halaman yang benar adalah `text/html; charset=UTF-8`, bukan `application/x-httpd-php`.
 
 ### Vercel error 500 `The WRITEPATH is not set correctly`
 
