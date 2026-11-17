@@ -542,7 +542,7 @@ Di Vercel, `php spark` tidak bisa dijalankan dari dashboard. Gunakan endpoint `/
 - Ganti email admin dan hash kata sandi admin.
 - Ganti semua link template, video, dan panduan yang masih memakai `example.com` dari menu **Produk**.
 - Isi `CRON_SECRET`, lalu jadwalkan `GET /cron/retry-email` setiap 15 menit.
-- Atur region Function Vercel sedekat mungkin dengan Neon, misalnya Singapore.
+- Atur region Function Vercel sedekat mungkin dengan Neon. Proyek ini memakai `vercel.json` berisi `"regions": ["sin1"]` agar Function berjalan di Singapore, sama dengan Neon.
 - Uji satu pembayaran sandbox di Preview, lalu satu pembayaran produksi nominal kecil sebelum promosi.
 - Atur pencadangan database Neon. Folder `writable/` di Vercel hanya sementara.
 
@@ -585,6 +585,37 @@ Gejalanya: membuka `https://...vercel.app` memicu unduhan `index.php`, atau brow
   ```
 
 - Periksa `Content-Type` respons. Halaman yang benar adalah `text/html; charset=UTF-8`, bukan `application/x-httpd-php`.
+
+### Halaman terasa berat setiap pindah halaman
+
+Gejalanya: aset statis cepat, tetapi setiap halaman PHP butuh sekitar 3 detik. Penyebabnya region Function Vercel tidak sama dengan region database.
+
+1. Pastikan `vercel.json` berisi region yang sama dengan Neon:
+
+   ```json
+   {
+     "regions": ["sin1"]
+   }
+   ```
+
+2. Deploy ulang ke production, lalu pastikan build memakai region tersebut:
+
+   ```bash
+   vercel deploy --prod
+   vercel inspect <deployment-url> | findstr container
+   ```
+
+   Output yang benar: `λ container (...) [sin1]`.
+
+3. Ukur waktu respons per halaman:
+
+   ```bash
+   curl -sS -o NUL -w "%{http_code} ttfb=%{time_starttransfer}\n" https://domain-anda/produk
+   ```
+
+   Dengan Function dan Neon di Singapore, halaman hangat sekitar 0,2–0,7 detik. Sebelum diperbaiki bisa 3 detik lebih karena setiap request sesi dan produk melakukan round-trip lintas benua.
+
+4. Request pertama setelah idle tetap lambat karena container dan Neon bangun dari tidur. Kirim ping ringan ke beranda setiap 4–5 menit dari layanan uptime eksternal bila ingin selalu hangat. Vercel Hobby hanya mengizinkan cron sekali sehari.
 
 ### Vercel error 500 `The WRITEPATH is not set correctly`
 
