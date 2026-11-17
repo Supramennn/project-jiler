@@ -524,6 +524,7 @@ Di Vercel, `php spark` tidak bisa dijalankan dari dashboard. Gunakan endpoint `/
 - Endpoint cron produksi membalas `403` tanpa token dan `200` dengan token yang benar.
 - `public/index.php` dieksekusi sebagai PHP; `/.env`, `app/Config/Database.php`, dan `composer.json` tidak dapat diakses publik.
 - Build image container dijalankan oleh Vercel Container Runtime. Build lokal dengan Docker belum diuji karena Docker tidak tersedia di mesin pengembangan.
+- Setelah Function dipindah ke region `sin1`, TTFB produksi untuk `/`, `/produk`, detail produk, checkout, status, dan login admin berada di kisaran 0,17–0,18 detik. Sebelum perbaikan sekitar 3,0–3,5 detik karena Function berjalan di `iad1` dan database di Singapore.
 
 ## Checklist produksi
 
