@@ -57,6 +57,32 @@ final class ProductPromoTest extends CIUnitTestCase
         $this->assertSame(100000, product_price($product));
     }
 
+    public function testExpiredPromoAtExactEndTimeReturnsToNormalPrice(): void
+    {
+        $ts = time();
+        $product = $this->product([
+            'harga_promo' => 79000,
+            'promo_mulai' => date('Y-m-d H:i:s', $ts - 3600),
+            'promo_berakhir' => date('Y-m-d H:i:s', $ts),
+        ]);
+
+        $this->assertSame('berakhir', product_promo_state($product, $ts));
+        $this->assertSame(100000, product_price($product));
+    }
+
+    public function testPromoStartsExactlyOnScheduleReturnsPromoPrice(): void
+    {
+        $ts = time();
+        $product = $this->product([
+            'harga_promo' => 79000,
+            'promo_mulai' => date('Y-m-d H:i:s', $ts),
+            'promo_berakhir' => date('Y-m-d H:i:s', $ts + 3600),
+        ]);
+
+        $this->assertSame('aktif', product_promo_state($product, $ts));
+        $this->assertSame(79000, product_price($product));
+    }
+
     public function testPromoMustBeLowerThanNormalPrice(): void
     {
         $product = $this->product(['harga_promo' => 100000]);

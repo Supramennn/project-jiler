@@ -1,0 +1,21 @@
+Example Database
+ [x] Model find all
+ [x] Soft delete leaves row
+
+Example Session
+ [x] Session simple
+
+Health
+ [x] Is defined app path
+ [x] Base url has been set
+
+Product Promo
+ [x] Product without promo uses normal price
+ [x] Active promo uses promo price
+ [x] Future promo is not active yet
+ [x] Expired promo returns to normal price
+ [x] Expired promo at exact end time returns to normal price
+ [x] Promo starts exactly on schedule returns promo price
+ [x] Promo must be lower than normal price
+ [x] Active promo inside schedule window
+

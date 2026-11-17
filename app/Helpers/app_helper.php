@@ -197,7 +197,7 @@ if (! function_exists('product_promo_state')) {
         if ($berakhir !== '') {
             $end = strtotime($berakhir);
 
-            if ($end !== false && $end < $now) {
+            if ($end !== false && $end <= $now) {
                 return 'berakhir';
             }
         }
