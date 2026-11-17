@@ -5,6 +5,17 @@ $isEdit    = $product !== null;
 $aktif     = $errors === [] ? (! $isEdit || (int) $product['aktif'] === 1) : old('aktif') !== null;
 $fieldErr  = static fn (string $key): string => isset($errors[$key]) ? '<span class="field-error">' . esc($errors[$key]) . '</span>' : '';
 $fieldWrap = static fn (string $key): string => isset($errors[$key]) ? ' has-error' : '';
+$dateInput = static function (string $key, ?array $product): string {
+    $value = old($key, $product[$key] ?? '');
+
+    if ($value === null || trim((string) $value) === '') {
+        return '';
+    }
+
+    $timestamp = strtotime((string) $value);
+
+    return $timestamp === false ? '' : date('Y-m-d\TH:i', $timestamp);
+};
 ?>
 <div class="admin-page-head">
     <div>
@@ -79,6 +90,34 @@ $fieldWrap = static fn (string $key): string => isset($errors[$key]) ? ' has-err
                     <input type="url" id="gambar" name="gambar" value="<?= esc(old('gambar', $product['gambar'] ?? '')) ?>" placeholder="https://...">
                     <span class="hint">Opsional. Gunakan gambar lanskap minimal 1200 piksel lebar.</span>
                     <?= $fieldErr('gambar') ?>
+                </div>
+            </section>
+
+            <section class="form-panel">
+                <h2>Promo dan diskon</h2>
+                <p class="panel-intro">Harga promo tampil sebagai harga coret dan badge diskon di katalog. Nominal checkout memakai harga promo, bukan harga normal.</p>
+
+                <div class="field<?= $fieldWrap('harga_promo') ?>">
+                    <label for="harga_promo">Harga promo (rupiah)</label>
+                    <input type="number" id="harga_promo" name="harga_promo" value="<?= esc(old('harga_promo', $product['harga_promo'] ?? '')) ?>" min="1" step="1" inputmode="numeric" placeholder="Kosongkan jika tidak ada promo">
+                    <span class="hint">Harus lebih kecil dari harga normal. Contoh: harga normal 89000, harga promo 71000.</span>
+                    <?= $fieldErr('harga_promo') ?>
+                </div>
+
+                <div class="field-row">
+                    <div class="field<?= $fieldWrap('promo_mulai') ?>">
+                        <label for="promo_mulai">Promo mulai</label>
+                        <input type="datetime-local" id="promo_mulai" name="promo_mulai" value="<?= esc($dateInput('promo_mulai', $product)) ?>">
+                        <span class="hint">Opsional. Kosongkan agar promo langsung aktif.</span>
+                        <?= $fieldErr('promo_mulai') ?>
+                    </div>
+
+                    <div class="field<?= $fieldWrap('promo_berakhir') ?>">
+                        <label for="promo_berakhir">Promo berakhir</label>
+                        <input type="datetime-local" id="promo_berakhir" name="promo_berakhir" value="<?= esc($dateInput('promo_berakhir', $product)) ?>">
+                        <span class="hint">Opsional. Setelah tanggal ini harga normal dipakai lagi.</span>
+                        <?= $fieldErr('promo_berakhir') ?>
+                    </div>
                 </div>
             </section>
 

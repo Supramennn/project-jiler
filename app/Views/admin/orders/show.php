@@ -1,6 +1,7 @@
 <?php
 $canMarkPaid = in_array($order['status'], ['pending', 'expired'], true);
 $canResend   = $order['status'] === 'paid';
+$diskon      = max(0, (int) $order['product_harga'] - (int) $order['nominal']);
 ?>
 <div class="admin-page-head">
     <div>
@@ -65,6 +66,14 @@ $canResend   = $order['status'] === 'paid';
 
                     <dt>Produk</dt>
                     <dd><?= esc($order['product_nama']) ?></dd>
+
+                    <dt>Harga normal</dt>
+                    <dd><?= rupiah($order['product_harga']) ?></dd>
+
+                    <?php if ($diskon > 0): ?>
+                        <dt>Diskon promo</dt>
+                        <dd>-<?= rupiah($diskon) ?></dd>
+                    <?php endif; ?>
 
                     <dt>Nominal</dt>
                     <dd><strong><?= rupiah($order['nominal']) ?></strong></dd>

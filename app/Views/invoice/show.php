@@ -1,3 +1,6 @@
+<?php
+$diskon = max(0, (int) $order['product_harga'] - (int) $order['nominal']);
+?>
 <!doctype html>
 <html lang="id">
 <head>
@@ -66,7 +69,11 @@
         <tbody>
             <tr>
                 <td>
-                    <strong><?= esc($order['product_nama']) ?></strong><br>
+                    <strong><?= esc($order['product_nama']) ?></strong>
+                    <?php if ($diskon > 0): ?>
+                        <span class="invoice-promo">Promo</span>
+                    <?php endif; ?>
+                    <br>
                     <span style="color: var(--muted); font-size: 12px;">Template Google Sheets dan web app Apps Script</span>
                 </td>
                 <td>1</td>
@@ -78,8 +85,14 @@
     <div class="invoice-totals">
         <div class="invoice-total-line">
             <span>Subtotal</span>
-            <span><?= rupiah($order['nominal']) ?></span>
+            <span><?= rupiah($order['product_harga']) ?></span>
         </div>
+        <?php if ($diskon > 0): ?>
+            <div class="invoice-total-line discount">
+                <span>Diskon promo</span>
+                <span>-<?= rupiah($diskon) ?></span>
+            </div>
+        <?php endif; ?>
         <div class="invoice-total-line grand">
             <span>Total</span>
             <span><?= rupiah($order['nominal']) ?></span>

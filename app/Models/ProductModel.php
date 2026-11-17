@@ -13,7 +13,8 @@ class ProductModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'nama', 'slug', 'harga', 'tingkat_kompleksitas', 'deskripsi', 'fitur',
+        'nama', 'slug', 'harga', 'harga_promo', 'promo_mulai', 'promo_berakhir',
+        'tingkat_kompleksitas', 'deskripsi', 'fitur',
         'gambar', 'link_demo', 'link_template', 'link_video', 'link_panduan',
         'aktif', 'urutan',
     ];

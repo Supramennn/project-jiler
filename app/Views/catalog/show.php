@@ -1,5 +1,10 @@
 <?php
-$features = $fitur ?? product_features($product['fitur']);
+$features   = $fitur ?? product_features($product['fitur']);
+$promoAktif = product_promo_active($product);
+$hargaAsli  = (int) $product['harga'];
+$hargaBayar = product_price($product);
+$hemat      = product_discount_amount($product);
+$persen     = product_discount_percent($product);
 ?>
 <section class="wrap">
     <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -71,8 +76,21 @@ $features = $fitur ?? product_features($product['fitur']);
     </div>
 
     <aside class="buy-card" aria-label="Ringkasan pembelian">
-        <div class="buy-label">Harga template</div>
-        <div class="buy-price"><?= rupiah($product['harga']) ?></div>
+        <div class="buy-label"><?= $promoAktif ? 'Harga promo' : 'Harga template' ?></div>
+
+        <?php if ($promoAktif): ?>
+            <div class="buy-promo-row">
+                <span class="promo-badge">Diskon <?= $persen ?>%</span>
+                <?php if (! empty($product['promo_berakhir'])): ?>
+                    <span class="promo-until">s.d. <?= tanggal_id($product['promo_berakhir'], false) ?></span>
+                <?php endif; ?>
+            </div>
+            <div class="buy-price is-promo"><?= rupiah($hargaBayar) ?></div>
+            <p class="buy-old">Harga normal <s><?= rupiah($hargaAsli) ?></s> &middot; Hemat <?= rupiah($hemat) ?></p>
+        <?php else: ?>
+            <div class="buy-price"><?= rupiah($hargaBayar) ?></div>
+        <?php endif; ?>
+
         <p class="buy-note">Sekali bayar, akses selamanya.</p>
 
         <a class="btn btn-primary btn-block" href="<?= site_url('checkout/' . $product['slug']) ?>">Beli template</a>

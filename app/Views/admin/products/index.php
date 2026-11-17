@@ -41,7 +41,17 @@ $visible = count(array_filter($products, static fn (array $product): bool => (in
                             <a class="cell-main" href="<?= site_url('admin/produk/' . $product['id'] . '/edit') ?>"><?= esc($product['nama']) ?></a>
                             <span class="cell-sub">/<?= esc($product['slug']) ?></span>
                         </td>
-                        <td class="num"><?= rupiah($product['harga']) ?></td>
+                        <td class="num">
+                            <?php $promoState = product_promo_state($product); ?>
+                            <?= rupiah(product_price($product)) ?>
+                            <?php if ($promoState === 'aktif'): ?>
+                                <span class="cell-sub"><s><?= rupiah($product['harga']) ?></s> &middot; Diskon <?= product_discount_percent($product) ?>%</span>
+                            <?php elseif ($promoState === 'terjadwal'): ?>
+                                <span class="cell-sub">Promo mulai <?= tanggal_id($product['promo_mulai'], false) ?></span>
+                            <?php elseif ($promoState === 'berakhir'): ?>
+                                <span class="cell-sub">Promo berakhir <?= tanggal_id($product['promo_berakhir'], false) ?></span>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <span class="chip chip-<?= complexity_tone($product['tingkat_kompleksitas']) ?>"><?= esc($product['tingkat_kompleksitas']) ?></span>
                         </td>

@@ -49,8 +49,17 @@ Proyek ini dikembangkan oleh **Nexus Diji**. Nama usaha sengaja dikosongkan kare
 - Daftar pesanan dengan pencarian dan filter status.
 - Detail pesanan, timeline event, dan log email.
 - Kirim ulang email dan tandai dibayar manual.
-- CRUD produk, pengaturan harga, link akses, dan status tampil.
+- CRUD produk, pengaturan harga, harga promo, jadwal promo, link akses, dan status tampil.
 - Halaman pengaturan integrasi dan kirim email uji.
+
+### Promo dan diskon
+
+- Setiap produk punya tiga kolom promo: `harga_promo`, `promo_mulai`, dan `promo_berakhir`.
+- Promo aktif hanya jika `harga_promo` lebih kecil dari `harga` dan waktu sekarang berada di dalam jadwal (jadwal opsional).
+- Katalog, detail produk, dan checkout menampilkan badge diskon, harga normal yang dicoret, harga promo, dan nominal hemat.
+- Checkout menagih harga promo. Pesanan menyimpan harga normal di `product_harga` dan nominal yang dibayar di `nominal`, sehingga invoice, email, dan detail pesanan admin menampilkan diskon yang sama.
+- Harga promo diubah dari **Admin → Produk → Ubah** pada panel "Promo dan diskon". Kosongkan `harga_promo` untuk mematikan promo dan kembali ke harga normal.
+- `PromoSeeder` mengisi contoh promo 20% untuk produk yang harganya masih kosong promonya: 89.000 → 71.000, 149.000 → 119.000, dan 199.000 → 159.000. Ganti atau hapus nilainya sebelum toko dipakai sungguhan.
 
 ### Animasi dan aksesibilitas
 

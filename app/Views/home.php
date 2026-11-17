@@ -33,7 +33,10 @@ $featuredFeatures = $featured ? array_slice(product_features($featured['fitur'])
                 <p>Dikirim ke email pembeli setelah pembayaran terverifikasi.</p>
                 <div class="dossier-total">
                     <span>Mulai dari</span>
-                    <strong><?= rupiah($featured['harga'] ?? 0) ?></strong>
+                    <?php if ($featured !== null && product_promo_active($featured)): ?>
+                        <span class="dossier-old"><s><?= rupiah($featured['harga']) ?></s></span>
+                    <?php endif; ?>
+                    <strong><?= rupiah($featured !== null ? product_price($featured) : 0) ?></strong>
                 </div>
             </div>
         </aside>
@@ -89,7 +92,7 @@ $featuredFeatures = $featured ? array_slice(product_features($featured['fitur'])
                         <div class="product-meta">
                             <span class="badge badge-<?= complexity_tone($product['tingkat_kompleksitas']) ?>"><?= esc($product['tingkat_kompleksitas']) ?></span>
                         </div>
-                        <div class="product-price"><?= rupiah($product['harga']) ?></div>
+                        <div class="product-price"><?= view('partials/product-price', ['product' => $product]) ?></div>
                         <div class="product-cta">
                             <a class="btn btn-ghost btn-small" href="<?= site_url('produk/' . $product['slug']) ?>">Lihat detail</a>
                         </div>

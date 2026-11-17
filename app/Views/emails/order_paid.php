@@ -2,6 +2,7 @@
 $hasTemplate = ! empty($links['template']);
 $hasVideo    = ! empty($links['video']);
 $hasGuide    = ! empty($links['panduan']);
+$diskon      = max(0, (int) $order['product_harga'] - (int) $order['nominal']);
 $linkStyle   = 'display:inline-block;padding:12px 18px;margin:6px 8px 6px 0;background:#7a5620;color:#fffaf0;text-decoration:none;border-radius:4px;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;';
 ?>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f1e7;padding:24px 12px;">
@@ -42,8 +43,19 @@ $linkStyle   = 'display:inline-block;padding:12px 18px;margin:6px 8px 6px 0;back
                                 <td style="padding:18px 20px;border-bottom:1px solid #d9ceba;">
                                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                                         <tr>
-                                            <td style="font-family:Arial,sans-serif;font-size:13px;color:#625a4d;"><?= esc($order['product_nama']) ?><br><span style="font-size:11px;color:#8a8173;">Template Google Sheets dan web app Apps Script</span></td>
-                                            <td align="right" style="font-family:Arial,sans-serif;font-size:14px;font-weight:bold;color:#1e1b16;white-space:nowrap;"><?= rupiah($order['nominal']) ?></td>
+                                            <td style="font-family:Arial,sans-serif;font-size:13px;color:#625a4d;">
+                                                <?= esc($order['product_nama']) ?><br>
+                                                <span style="font-size:11px;color:#8a8173;">Template Google Sheets dan web app Apps Script</span>
+                                                <?php if ($diskon > 0): ?>
+                                                    <br><span style="font-size:11px;color:#7a5620;">Hemat <?= rupiah($diskon) ?> dari harga normal</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td align="right" style="font-family:Arial,sans-serif;font-size:14px;font-weight:bold;color:#1e1b16;white-space:nowrap;">
+                                                <?php if ($diskon > 0): ?>
+                                                    <span style="font-size:11px;font-weight:normal;color:#8a8173;text-decoration:line-through;"><?= rupiah($order['product_harga']) ?></span><br>
+                                                <?php endif; ?>
+                                                <?= rupiah($order['nominal']) ?>
+                                            </td>
                                         </tr>
                                     </table>
                                 </td>

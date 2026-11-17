@@ -167,6 +167,96 @@ if (! function_exists('product_features')) {
     }
 }
 
+if (! function_exists('product_promo_state')) {
+    /**
+     * @param array<string, mixed> $product
+     *
+     * @return 'none'|'terjadwal'|'berakhir'|'aktif'
+     */
+    function product_promo_state(array $product, ?int $now = null): string
+    {
+        $harga = (int) ($product['harga'] ?? 0);
+        $promo = (int) ($product['harga_promo'] ?? 0);
+
+        if ($harga <= 0 || $promo <= 0 || $promo >= $harga) {
+            return 'none';
+        }
+
+        $now      = $now ?? time();
+        $mulai    = trim((string) ($product['promo_mulai'] ?? ''));
+        $berakhir = trim((string) ($product['promo_berakhir'] ?? ''));
+
+        if ($mulai !== '') {
+            $start = strtotime($mulai);
+
+            if ($start !== false && $start > $now) {
+                return 'terjadwal';
+            }
+        }
+
+        if ($berakhir !== '') {
+            $end = strtotime($berakhir);
+
+            if ($end !== false && $end < $now) {
+                return 'berakhir';
+            }
+        }
+
+        return 'aktif';
+    }
+}
+
+if (! function_exists('product_promo_active')) {
+    /**
+     * @param array<string, mixed> $product
+     */
+    function product_promo_active(array $product): bool
+    {
+        return product_promo_state($product) === 'aktif';
+    }
+}
+
+if (! function_exists('product_price')) {
+    /**
+     * Harga yang benar-benar ditagih, sudah memperhitungkan promo aktif.
+     *
+     * @param array<string, mixed> $product
+     */
+    function product_price(array $product): int
+    {
+        return product_promo_active($product)
+            ? (int) $product['harga_promo']
+            : (int) $product['harga'];
+    }
+}
+
+if (! function_exists('product_discount_amount')) {
+    /**
+     * @param array<string, mixed> $product
+     */
+    function product_discount_amount(array $product): int
+    {
+        return max(0, (int) $product['harga'] - product_price($product));
+    }
+}
+
+if (! function_exists('product_discount_percent')) {
+    /**
+     * @param array<string, mixed> $product
+     */
+    function product_discount_percent(array $product): int
+    {
+        $harga = (int) ($product['harga'] ?? 0);
+        $hemat = product_discount_amount($product);
+
+        if ($harga <= 0 || $hemat <= 0) {
+            return 0;
+        }
+
+        return max(1, min(99, (int) round(($hemat / $harga) * 100)));
+    }
+}
+
 if (! function_exists('complexity_tone')) {
     function complexity_tone(string $complexity): string
     {

@@ -35,6 +35,12 @@ class Products extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
+        $promoErrors = $this->promoErrors();
+
+        if ($promoErrors !== []) {
+            return redirect()->back()->withInput()->with('errors', $promoErrors);
+        }
+
         $data       = $this->payload();
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['nama']);
 
@@ -74,6 +80,12 @@ class Products extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
+        $promoErrors = $this->promoErrors();
+
+        if ($promoErrors !== []) {
+            return redirect()->back()->withInput()->with('errors', $promoErrors);
+        }
+
         $data         = $this->payload();
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['nama'], $id);
 
@@ -102,6 +114,11 @@ class Products extends BaseController
             'nama'                 => trim((string) $this->request->getPost('nama')),
             'slug'                 => trim((string) $this->request->getPost('slug')),
             'harga'                => (int) $this->request->getPost('harga'),
+            'harga_promo'          => trim((string) $this->request->getPost('harga_promo')) !== ''
+                ? (int) $this->request->getPost('harga_promo')
+                : null,
+            'promo_mulai'          => $this->parseDateTime($this->request->getPost('promo_mulai')),
+            'promo_berakhir'       => $this->parseDateTime($this->request->getPost('promo_berakhir')),
             'tingkat_kompleksitas' => (string) $this->request->getPost('tingkat_kompleksitas'),
             'deskripsi'            => trim((string) $this->request->getPost('deskripsi')),
             'fitur'                => trim((string) $this->request->getPost('fitur')),
@@ -121,6 +138,7 @@ class Products extends BaseController
             'nama'                 => 'required|min_length[3]|max_length[150]',
             'slug'                 => 'permit_empty|max_length[160]',
             'harga'                => 'required|integer|greater_than[0]',
+            'harga_promo'          => 'permit_empty|is_natural_no_zero',
             'tingkat_kompleksitas' => 'required|in_list[Sederhana,Menengah,Kompleks]',
             'deskripsi'            => 'required',
             'gambar'               => 'permit_empty|valid_url',
@@ -143,6 +161,9 @@ class Products extends BaseController
                 'required'     => 'Harga wajib diisi.',
                 'integer'      => 'Harga harus berupa angka tanpa titik atau koma.',
                 'greater_than' => 'Harga harus lebih besar dari nol.',
+            ],
+            'harga_promo' => [
+                'is_natural_no_zero' => 'Harga promo harus berupa angka bulat lebih besar dari nol.',
             ],
             'tingkat_kompleksitas' => [
                 'required' => 'Pilih tingkat kompleksitas.',
@@ -167,6 +188,53 @@ class Products extends BaseController
                 'valid_url' => 'URL panduan belum valid.',
             ],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function promoErrors(): array
+    {
+        $errors = [];
+        $harga  = (int) $this->request->getPost('harga');
+
+        $promoRaw = trim((string) $this->request->getPost('harga_promo'));
+
+        if ($promoRaw !== '' && (int) $promoRaw >= $harga) {
+            $errors['harga_promo'] = 'Harga promo harus lebih kecil dari harga normal.';
+        }
+
+        $mulaiRaw    = trim((string) $this->request->getPost('promo_mulai'));
+        $berakhirRaw = trim((string) $this->request->getPost('promo_berakhir'));
+        $mulai       = $this->parseDateTime($mulaiRaw);
+        $berakhir    = $this->parseDateTime($berakhirRaw);
+
+        if ($mulaiRaw !== '' && $mulai === null) {
+            $errors['promo_mulai'] = 'Format tanggal mulai promo belum benar.';
+        }
+
+        if ($berakhirRaw !== '' && $berakhir === null) {
+            $errors['promo_berakhir'] = 'Format tanggal berakhir promo belum benar.';
+        }
+
+        if ($mulai !== null && $berakhir !== null && strtotime($berakhir) <= strtotime($mulai)) {
+            $errors['promo_berakhir'] = 'Tanggal berakhir promo harus setelah tanggal mulai.';
+        }
+
+        return $errors;
+    }
+
+    private function parseDateTime(mixed $value): ?string
+    {
+        $value = str_replace('T', ' ', trim((string) $value));
+
+        if ($value === '') {
+            return null;
+        }
+
+        $timestamp = strtotime($value);
+
+        return $timestamp === false ? null : date('Y-m-d H:i:s', $timestamp);
     }
 
     private function uniqueSlug(string $value, ?int $ignoreId = null): string

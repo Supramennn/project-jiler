@@ -29,7 +29,7 @@
                         <div class="product-meta">
                             <span class="badge badge-<?= complexity_tone($product['tingkat_kompleksitas']) ?>"><?= esc($product['tingkat_kompleksitas']) ?></span>
                         </div>
-                        <div class="product-price"><?= rupiah($product['harga']) ?></div>
+                        <div class="product-price"><?= view('partials/product-price', ['product' => $product]) ?></div>
                         <div class="product-cta">
                             <a class="btn btn-ghost btn-small" href="<?= site_url('produk/' . $product['slug']) ?>">Lihat detail</a>
                         </div>

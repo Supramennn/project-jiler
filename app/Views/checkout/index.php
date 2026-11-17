@@ -1,6 +1,11 @@
 <?php
-$errors = session()->getFlashdata('errors') ?? [];
-$errorList = is_array($errors) ? $errors : [];
+$errors     = session()->getFlashdata('errors') ?? [];
+$errorList  = is_array($errors) ? $errors : [];
+$promoAktif = product_promo_active($product);
+$hargaAsli  = (int) $product['harga'];
+$hargaBayar = product_price($product);
+$hemat      = product_discount_amount($product);
+$persen     = product_discount_percent($product);
 ?>
 <section class="page-head">
     <div class="wrap">
@@ -98,9 +103,20 @@ $errorList = is_array($errors) ? $errors : [];
             <strong>1 template</strong>
         </div>
 
+        <?php if ($promoAktif): ?>
+            <div class="summary-line">
+                <span>Harga normal</span>
+                <strong><s><?= rupiah($hargaAsli) ?></s></strong>
+            </div>
+            <div class="summary-line summary-discount">
+                <span>Diskon promo (<?= $persen ?>%)</span>
+                <strong>-<?= rupiah($hemat) ?></strong>
+            </div>
+        <?php endif; ?>
+
         <div class="summary-total">
             <span>Total bayar</span>
-            <strong><?= rupiah($product['harga']) ?></strong>
+            <strong><?= rupiah($hargaBayar) ?></strong>
         </div>
 
         <p class="summary-note">Setelah klik lanjut, Anda memilih metode pembayaran. Link template baru dikirim setelah gateway mengonfirmasi pembayaran berhasil. Invoice bisa dibuka dari email atau halaman status pesanan.</p>

@@ -515,6 +515,17 @@ textarea {
     color: var(--muted);
 }
 
+.dossier-total .dossier-old {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.dossier-total .dossier-old s {
+    text-decoration-thickness: 1px;
+}
+
 .dossier-total strong {
     font-family: var(--serif);
     font-size: 30px;
@@ -731,6 +742,62 @@ textarea {
 
 .product-row .product-cta {
     text-align: right;
+}
+
+.price-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+}
+
+.price-stack .price-now {
+    font: inherit;
+    color: inherit;
+    white-space: nowrap;
+}
+
+.price-stack.has-promo .price-now {
+    color: var(--gold-deep);
+}
+
+.price-old {
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+}
+
+.price-old s {
+    text-decoration-thickness: 1px;
+}
+
+.price-save {
+    color: var(--gold-deep);
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.promo-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 3px 8px;
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+    background: var(--gold-pale);
+    color: var(--gold-deep);
+    font-family: var(--sans);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .steps {
@@ -1122,6 +1189,33 @@ textarea {
     font-variant-numeric: tabular-nums;
 }
 
+.buy-card .buy-price.is-promo {
+    color: var(--gold-deep);
+}
+
+.buy-promo-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.promo-until {
+    color: var(--muted);
+    font-size: 11.5px;
+}
+
+.buy-card .buy-old {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12.5px;
+}
+
+.buy-card .buy-old s {
+    text-decoration-thickness: 1px;
+}
+
 .buy-card .buy-note {
     margin-top: 6px;
     color: var(--muted);
@@ -1321,6 +1415,15 @@ textarea {
 .summary-line strong {
     text-align: right;
     font-weight: 600;
+}
+
+.summary-line.summary-discount span,
+.summary-line.summary-discount strong {
+    color: var(--gold-deep);
+}
+
+.summary-line s {
+    text-decoration-thickness: 1px;
 }
 
 .summary-total {
@@ -1785,6 +1888,22 @@ textarea {
     font-weight: 600;
 }
 
+.invoice-promo {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+    background: var(--gold-pale);
+    color: var(--gold-deep);
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    vertical-align: 1px;
+}
+
 .invoice-totals {
     margin-left: auto;
     width: min(320px, 100%);
@@ -1797,6 +1916,10 @@ textarea {
     gap: 20px;
     padding: 6px 0;
     font-size: 13.5px;
+}
+
+.invoice-total-line.discount {
+    color: var(--gold-deep);
 }
 
 .invoice-total-line.grand {
@@ -2201,6 +2324,10 @@ textarea {
     .product-row .product-price {
         grid-column: 1;
         grid-row: auto;
+    }
+
+    .product-row .price-stack {
+        align-items: flex-start;
     }
 
     .product-row .product-cta {
