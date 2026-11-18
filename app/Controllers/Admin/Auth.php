@@ -12,7 +12,7 @@ class Auth extends BaseController
             return redirect()->to('admin');
         }
 
-        return view('admin/auth/login', [
+        return $this->renderAdminAuth('admin/auth/login', [
             'store' => config('Store'),
         ]);
     }

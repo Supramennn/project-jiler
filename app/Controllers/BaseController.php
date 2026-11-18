@@ -68,4 +68,16 @@ abstract class BaseController extends Controller
             ],
         ]);
     }
+
+    protected function renderAdminAuth(string $view, array $data = []): string
+    {
+        $store = config('Store');
+        $data['store'] = $store;
+
+        return view('layouts/admin_auth', [
+            'title'   => 'Masuk dashboard',
+            'content' => view($view, $data),
+            'store'   => $store,
+        ]);
+    }
 }

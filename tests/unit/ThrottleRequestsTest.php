@@ -28,4 +28,22 @@ final class ThrottleRequestsTest extends CIUnitTestCase
         $this->assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));
         $this->assertStringContainsString('Terlalu banyak percobaan', $response->getBody());
     }
+
+    public function testForwardedForSeparatesVisitorBuckets(): void
+    {
+        $request = service('request');
+        $filter  = new ThrottleRequests();
+        $bucket  = 'test-' . bin2hex(random_bytes(4));
+
+        $request->setHeader('X-Forwarded-For', '198.51.100.7');
+        $this->assertNull($filter->before($request, ['1', '60', $bucket]));
+
+        $this->assertInstanceOf(
+            ResponseInterface::class,
+            $filter->before($request, ['1', '60', $bucket])
+        );
+
+        $request->setHeader('X-Forwarded-For', '198.51.100.8, 203.0.113.10');
+        $this->assertNull($filter->before($request, ['1', '60', $bucket]));
+    }
 }

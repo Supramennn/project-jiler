@@ -222,7 +222,7 @@ Pendaftaran Google Search Console dan Bing Webmaster Tools tidak bisa dilakukan 
 
 ### Rate limit
 
-Filter `App\Filters\ThrottleRequests` memakai Throttler CodeIgniter. Kunci disimpan per bucket dan IP, jadi satu endpoint tidak memengaruhi endpoint lain.
+Filter `App\Filters\ThrottleRequests` memakai Throttler CodeIgniter. Kunci disimpan per bucket dan IP, jadi satu endpoint tidak memengaruhi endpoint lain. IP diambil dari `X-Forwarded-For` yang ditimpa Vercel, lalu fallback ke `REMOTE_ADDR` untuk lokal.
 
 | Endpoint | Batas | Jendela |
 | --- | --- | --- |
@@ -666,7 +666,7 @@ Di Vercel, `php spark` tidak bisa dijalankan dari dashboard. Gunakan endpoint `/
 - Security headers muncul pada halaman HTML, JSON `/health`, dan respons `429`.
 - `POST /status` yang dikirim 12 kali dalam satu menit membalas `200` pada 10 request pertama, lalu `429` dengan `Retry-After` dan halaman `errors/rate_limit.php`.
 - Ekspor CSV lolos uji unit: BOM UTF-8, header kolom, perhitungan diskon, dan netralisasi formula `=SUM(...)` serta nomor `+62`.
-- `php vendor\bin\phpunit --no-coverage` lulus 24 test dengan 69 assertion.
+- `php vendor\bin\phpunit --no-coverage` lulus 25 test dengan 72 assertion.
 - Konfigurasi produksi diuji lewat probe sementara: `DATABASE_URL` Neon terbaca sebagai PostgreSQL, password ter-decode, `sslmode=require` dipakai, `APP_BASE_URL` dinormalisasi, sesi memilih `PostgreHandler`, dan `WRITABLE_PATH` mengarah ke folder tulis alternatif.
 - Deploy produksi Vercel + Neon berhasil. `https://project-jiler.vercel.app` merespons `200` dengan `Content-Type: text/html; charset=UTF-8`.
 - Beranda produksi menampilkan tiga produk dari Neon, nama usaha masih placeholder "Nama Usaha", dan kredit "Nexus Diji".
