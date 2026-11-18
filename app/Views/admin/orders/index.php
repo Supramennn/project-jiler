@@ -1,6 +1,12 @@
 <?php
-$hasFilter = $q !== '' || $status !== '' || $emailStatus !== '';
-$total     = $pager->getTotal('orders');
+$hasFilter    = $q !== '' || $status !== '' || $emailStatus !== '';
+$total        = $pager->getTotal('orders');
+$exportQuery  = http_build_query(array_filter([
+    'q'            => $q,
+    'status'       => $status,
+    'email_status' => $emailStatus,
+], static fn ($value): bool => $value !== ''));
+$exportUrl = site_url('admin/pesanan/ekspor' . ($exportQuery !== '' ? '?' . $exportQuery : ''));
 ?>
 <div class="admin-page-head">
     <div>
@@ -14,6 +20,7 @@ $total     = $pager->getTotal('orders');
                 <button class="btn btn-gold btn-small" type="submit">Kirim ulang <?= $failedEmailCount ?> email gagal</button>
             </form>
         <?php endif; ?>
+        <a class="btn btn-ghost btn-small" href="<?= esc($exportUrl) ?>">Ekspor CSV</a>
         <a class="btn btn-ghost btn-small" href="<?= site_url('admin') ?>">Ringkasan</a>
     </div>
 </div>

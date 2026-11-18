@@ -2,6 +2,8 @@
 
 namespace Config;
 
+use App\Filters\SecurityHeaders;
+use App\Filters\ThrottleRequests;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
@@ -11,7 +13,6 @@ use CodeIgniter\Filters\Honeypot;
 use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
-use CodeIgniter\Filters\SecureHeaders;
 
 class Filters extends BaseFilters
 {
@@ -29,7 +30,8 @@ class Filters extends BaseFilters
         'toolbar'       => DebugToolbar::class,
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
-        'secureheaders' => SecureHeaders::class,
+        'secureheaders' => SecurityHeaders::class,
+        'throttle'      => ThrottleRequests::class,
         'cors'          => Cors::class,
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
@@ -79,7 +81,7 @@ class Filters extends BaseFilters
         ],
         'after' => [
             // 'honeypot',
-            // 'secureheaders',
+            'secureheaders',
         ],
     ];
 

@@ -6,6 +6,7 @@ use CodeIgniter\Router\RouteCollection;
 
 $routes->get('sitemap.xml', 'Seo::sitemap');
 $routes->get('robots.txt', 'Seo::robots');
+$routes->get('health', 'Health::index');
 
 $routes->get('/', 'Home::index');
 
@@ -13,16 +14,16 @@ $routes->get('produk', 'Catalog::index');
 $routes->get('produk/(:segment)', 'Catalog::show/$1');
 
 $routes->get('checkout/(:segment)', 'Checkout::index/$1');
-$routes->post('checkout/(:segment)', 'Checkout::create/$1');
+$routes->post('checkout/(:segment)', 'Checkout::create/$1', ['filter' => 'throttle:5,60,checkout']);
 
 $routes->get('pembayaran/(:segment)', 'Payment::show/$1');
-$routes->post('pembayaran/(:segment)/metode', 'Payment::choose/$1');
-$routes->post('pembayaran/(:segment)/simulasi', 'Payment::simulate/$1');
+$routes->post('pembayaran/(:segment)/metode', 'Payment::choose/$1', ['filter' => 'throttle:10,60,payment-method']);
+$routes->post('pembayaran/(:segment)/simulasi', 'Payment::simulate/$1', ['filter' => 'throttle:10,60,payment-simulate']);
 $routes->get('sukses/(:segment)', 'Payment::success/$1');
 $routes->get('gagal/(:segment)', 'Payment::failed/$1');
 
 $routes->get('status', 'Status::index');
-$routes->post('status', 'Status::check');
+$routes->post('status', 'Status::check', ['filter' => 'throttle:10,60,status']);
 $routes->get('status/(:segment)', 'Status::json/$1');
 
 $routes->get('invoice/(:segment)/(:segment)', 'Invoice::show/$1/$2');
@@ -33,9 +34,11 @@ $routes->get('privasi', 'Legal::privacy');
 $routes->post('webhook/midtrans', 'Webhook::midtrans');
 
 $routes->get('cron/retry-email', 'Cron::retryEmails');
+$routes->get('cron/reconcile-payments', 'Cron::reconcilePayments');
+$routes->get('cron/expire-orders', 'Cron::expireOrders');
 
 $routes->get('admin/login', 'Admin\Auth::login');
-$routes->post('admin/login', 'Admin\Auth::attempt');
+$routes->post('admin/login', 'Admin\Auth::attempt', ['filter' => 'throttle:5,300,admin-login']);
 $routes->post('admin/logout', 'Admin\Auth::logout');
 
 $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollection $routes): void {
@@ -43,6 +46,7 @@ $routes->group('admin', ['filter' => 'adminauth'], static function (RouteCollect
     $routes->post('uji-pesanan', 'Admin\Dashboard::demoOrder');
 
     $routes->get('pesanan', 'Admin\Orders::index');
+    $routes->get('pesanan/ekspor', 'Admin\Orders::export');
     $routes->post('pesanan/kirim-ulang-gagal', 'Admin\Orders::retryFailed');
     $routes->get('pesanan/(:segment)', 'Admin\Orders::show/$1');
     $routes->post('pesanan/(:segment)/kirim-ulang', 'Admin\Orders::resend/$1');

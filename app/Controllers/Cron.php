@@ -3,26 +3,16 @@
 namespace App\Controllers;
 
 use App\Libraries\OrderFulfillment;
+use App\Libraries\PaymentReconciler;
 use App\Models\OrderModel;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class Cron extends BaseController
 {
-    public function retryEmails()
+    public function retryEmails(): ResponseInterface
     {
-        $secret = (string) env('CRON_SECRET', '');
-
-        if ($secret === '') {
-            return $this->response->setStatusCode(503)->setJSON([
-                'ok'      => false,
-                'message' => 'CRON_SECRET belum diatur.',
-            ]);
-        }
-
-        if (! hash_equals($secret, $this->providedSecret())) {
-            return $this->response->setStatusCode(403)->setJSON([
-                'ok'      => false,
-                'message' => 'Token cron tidak valid.',
-            ]);
+        if ($response = $this->guard()) {
+            return $response;
         }
 
         $limit  = min(50, max(1, (int) ($this->request->getGet('limit') ?? 20)));
@@ -46,6 +36,61 @@ class Cron extends BaseController
             'sent'      => $sent,
             'failed'    => $failed,
         ]);
+    }
+
+    public function reconcilePayments(): ResponseInterface
+    {
+        if ($response = $this->guard()) {
+            return $response;
+        }
+
+        $limit = min(25, max(1, (int) ($this->request->getGet('limit') ?? 10)));
+
+        return $this->response->setJSON((new PaymentReconciler())->run($limit));
+    }
+
+    public function expireOrders(): ResponseInterface
+    {
+        if ($response = $this->guard()) {
+            return $response;
+        }
+
+        $limit   = min(200, max(1, (int) ($this->request->getGet('limit') ?? 100)));
+        $orders  = model(OrderModel::class)->expiredOrders($limit);
+        $expired = 0;
+
+        foreach ($orders as $order) {
+            if ((new OrderFulfillment())->markExpired($order, [], 'cron')) {
+                $expired++;
+            }
+        }
+
+        return $this->response->setJSON([
+            'ok'        => true,
+            'processed' => count($orders),
+            'expired'   => $expired,
+        ]);
+    }
+
+    private function guard(): ?ResponseInterface
+    {
+        $secret = trim((string) env('CRON_SECRET', ''));
+
+        if ($secret === '') {
+            return $this->response->setStatusCode(503)->setJSON([
+                'ok'      => false,
+                'message' => 'CRON_SECRET belum diatur.',
+            ]);
+        }
+
+        if (! hash_equals($secret, $this->providedSecret())) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'ok'      => false,
+                'message' => 'Token cron tidak valid.',
+            ]);
+        }
+
+        return null;
     }
 
     private function providedSecret(): string

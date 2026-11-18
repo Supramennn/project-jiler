@@ -115,6 +115,25 @@ class OrderModel extends Model
             ->findAll();
     }
 
+    public function reconcilableOrders(int $limit = 10, int $days = 7): array
+    {
+        return $this->whereIn('status', ['pending', 'expired'])
+            ->where('payment_method IS NOT NULL', null, false)
+            ->where('created_at >=', date('Y-m-d H:i:s', time() - ($days * 86400)))
+            ->orderBy('created_at', 'ASC')
+            ->limit($limit)
+            ->findAll();
+    }
+
+    public function expiredOrders(int $limit = 100): array
+    {
+        return $this->where('status', 'pending')
+            ->where('expires_at <', date('Y-m-d H:i:s'))
+            ->orderBy('expires_at', 'ASC')
+            ->limit($limit)
+            ->findAll();
+    }
+
     public function dailyRevenue(int $days = 7): array
     {
         $labels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];

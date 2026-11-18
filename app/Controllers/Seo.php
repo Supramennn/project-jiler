@@ -75,6 +75,7 @@ class Seo extends BaseController
             'Disallow: /gagal',
             'Disallow: /invoice',
             'Disallow: /status',
+            'Disallow: /health',
             'Disallow: /webhook',
             'Disallow: /cron',
             '',

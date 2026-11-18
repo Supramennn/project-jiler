@@ -45,6 +45,67 @@ class PaymentService
         ];
     }
 
+    /**
+     * Ambil status transaksi langsung dari Midtrans.
+     *
+     * @return array<string, mixed>|null null jika transaksi belum dibuat di Midtrans
+     */
+    public function fetchMidtransStatus(array $order): ?array
+    {
+        $config = config('Payment');
+
+        if (! $config->usesMidtrans()) {
+            throw new RuntimeException('Midtrans belum dikonfigurasi.');
+        }
+
+        $url = rtrim($config->midtransApiUrl, '/')
+            . '/v2/' . rawurlencode((string) $order['order_id']) . '/status';
+
+        $curl = curl_init($url);
+        curl_setopt_array($curl, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Accept: application/json'],
+            CURLOPT_USERPWD        => $config->midtransServerKey . ':',
+            CURLOPT_TIMEOUT        => 8,
+            CURLOPT_CONNECTTIMEOUT => 5,
+        ]);
+
+        $response = curl_exec($curl);
+        $error    = curl_error($curl);
+        $status   = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if ($response === false) {
+            throw new RuntimeException('Tidak bisa menghubungi Midtrans: ' . $error);
+        }
+
+        $decoded = json_decode($response, true);
+
+        if ($status === 404) {
+            return null;
+        }
+
+        if ($status < 200 || $status >= 300 || ! is_array($decoded)) {
+            $message = is_array($decoded) && isset($decoded['status_message'])
+                ? (string) $decoded['status_message']
+                : 'HTTP ' . $status;
+
+            throw new RuntimeException('Status Midtrans gagal: ' . $message);
+        }
+
+        if ((string) ($decoded['order_id'] ?? '') !== (string) $order['order_id']) {
+            throw new RuntimeException('Respons Midtrans bukan untuk pesanan ini.');
+        }
+
+        foreach (['transaction_status', 'status_code', 'gross_amount'] as $field) {
+            if (! isset($decoded[$field]) || $decoded[$field] === '') {
+                throw new RuntimeException('Respons Midtrans tidak lengkap: ' . $field . '.');
+            }
+        }
+
+        return $decoded;
+    }
+
     public function sandboxNotification(array $order): array
     {
         $payload = [

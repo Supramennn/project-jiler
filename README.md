@@ -218,6 +218,101 @@ Langkah aktivasi:
 
 Pendaftaran Google Search Console dan Bing Webmaster Tools tidak bisa dilakukan dari kode karena memerlukan akun pemilik domain.
 
+## Keamanan dan operasional
+
+### Rate limit
+
+Filter `App\Filters\ThrottleRequests` memakai Throttler CodeIgniter. Kunci disimpan per bucket dan IP, jadi satu endpoint tidak memengaruhi endpoint lain.
+
+| Endpoint | Batas | Jendela |
+| --- | --- | --- |
+| `POST /checkout/{slug}` | 5 | 60 detik |
+| `POST /status` | 10 | 60 detik |
+| `POST /pembayaran/{order}/metode` | 10 | 60 detik |
+| `POST /pembayaran/{order}/simulasi` | 10 | 60 detik |
+| `POST /admin/login` | 5 | 300 detik |
+
+Respons `429` menyertakan header `Retry-After` dan halaman `errors/rate_limit.php`. Untuk request `Accept: application/json`, balasannya JSON.
+
+Penyimpanan memakai cache file. Di Vercel, batas berlaku per instance Function, jadi saat trafik tersebar ke beberapa instance batas efektif bisa lebih longgar. Untuk batas yang ketat dan konsisten, konfigurasi Redis atau Upstash sebagai cache bersama.
+
+### Security headers
+
+Filter `secureheaders` dipasang global sebagai filter `after`, sehingga berlaku untuk halaman publik, admin, JSON, dan respons `429`:
+
+- `X-Frame-Options: SAMEORIGIN`
+- `X-Content-Type-Options: nosniff`
+- `X-Download-Options: noopen`
+- `X-Permitted-Cross-Domain-Policies: none`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), geolocation=(), microphone=()`
+
+Header ini tidak memakai CSP karena halaman masih memuat font Google dan skrip inline. Menambahkan CSP membutuhkan audit inline script lebih dulu.
+
+### Health check
+
+`GET /health` mengembalikan JSON tanpa autentikasi dan `noindex`:
+
+```json
+{
+  "status": "ok",
+  "time": "2026-11-18T14:32:38+07:00",
+  "environment": "production",
+  "checks": {
+    "database": "ok",
+    "schema": "ok",
+    "payment": "midtrans",
+    "mail": "smtp",
+    "cron_secret": true
+  },
+  "warnings": []
+}
+```
+
+- `200` jika database dan tabel `orders` bisa dibaca.
+- `503` jika database atau skema gagal.
+- `warnings` memberi tahu driver pembayaran yang masih sandbox, email yang masih `file`, atau `CRON_SECRET` kosong.
+
+Endpoint ini hanya membaca koneksi dan konfigurasi. Tidak ada data pesanan atau kredensial yang dikembalikan. Cocok dipakai UptimeRobot, Better Stack, atau monitor lain dengan interval 5 menit.
+
+### Cron operasional
+
+Tiga endpoint `GET` memakai autentikasi yang sama:
+
+```text
+Authorization: Bearer <CRON_SECRET>
+```
+
+atau:
+
+```text
+X-Cron-Secret: <CRON_SECRET>
+```
+
+| Endpoint | Fungsi | Batas per jalan |
+| --- | --- | --- |
+| `/cron/retry-email` | Kirim ulang email akses yang gagal | 50 |
+| `/cron/reconcile-payments` | Cocokkan status pesanan dengan Midtrans | 25, anggaran 25 detik |
+| `/cron/expire-orders` | Tandai pesanan pending yang lewat `expires_at` | 200 |
+
+Semua endpoint menerima `?limit=` dalam batas di atas. Tanpa `CRON_SECRET` membalas `503`; token salah membalas `403`.
+
+`reconcile-payments` hanya berjalan jika `PAYMENT_DRIVER=midtrans`. Pesanan yang sudah dibayar tetapi webhook-nya tidak masuk akan ditandai `paid` dan email akses dikirim lewat jalur yang sama dengan webhook. Sumber perubahan dicatat sebagai `rekonsiliasi` di riwayat pesanan.
+
+`expire-orders` memakai `OrderFulfillment::markExpired()`, sehingga email akses tidak pernah dikirim untuk pesanan yang tidak dibayar.
+
+### Ekspor CSV
+
+Tombol **Ekspor CSV** di halaman **Admin → Pesanan** mengunduh pesanan sesuai filter `q`, `status`, dan `email_status` yang sedang aktif. Ketentuan:
+
+- Maksimal 5.000 baris per ekspor.
+- UTF-8 dengan BOM agar Excel membaca rupiah dan huruf beraksen dengan benar.
+- Sel yang diawali `=`, `+`, `-`, `@`, tab, atau enter diberi awalan `'` untuk mencegah formula injection.
+- Kolom diskon dihitung `harga normal - nominal`, tidak pernah negatif.
+- Respons memakai `Cache-Control: no-store`.
+
+Ekspor tidak memuat `access_token` atau isi payload webhook.
+
 ## Konfigurasi penting
 
 | Variabel | Keterangan |
@@ -245,12 +340,13 @@ Pendaftaran Google Search Console dan Bing Webmaster Tools tidak bisa dilakukan 
 | `SESSION_COOKIE_NAME` | Nama cookie sesi |
 | `SESSION_EXPIRATION` | Umur sesi dalam detik |
 | `COOKIE_SECURE` | `true` bila situs hanya lewat HTTPS |
-| `CRON_SECRET` | Token untuk endpoint kirim ulang email |
+| `CRON_SECRET` | Token untuk ketiga endpoint cron |
 | `PAYMENT_DRIVER` | `sandbox` atau `midtrans` |
 | `MIDTRANS_SERVER_KEY` | Server key Midtrans |
 | `MIDTRANS_CLIENT_KEY` | Client key Midtrans |
 | `MIDTRANS_IS_PRODUCTION` | `false` untuk sandbox Midtrans, `true` untuk produksi |
 | `MIDTRANS_SNAP_URL` | Kosongkan untuk memakai URL Snap sesuai mode |
+| `MIDTRANS_API_URL` | Kosongkan untuk memakai URL API status sesuai mode |
 | `MAIL_DRIVER` | `file` atau `smtp` |
 | `MAIL_FROM_EMAIL` | Alamat pengirim email |
 | `MAIL_FROM_NAME` | Nama pengirim, kosong berarti memakai nama usaha |
@@ -413,17 +509,21 @@ Catatan:
 ### 5. Verifikasi setelah deploy
 
 1. Buka `/` dan `/produk`. Keduanya harus merespons halaman toko, bukan 404 atau halaman kosong.
-2. Buka `/admin/login`, masuk, lalu buka **Pesanan** dan **Produk**. Jika login berhasil dan sesi bertahan, konfigurasi database dan `ci_sessions` benar.
-3. Daftarkan `https://domain-anda.com/webhook/midtrans` sebagai **Payment Notification URL** di Midtrans.
-4. Lakukan satu transaksi sandbox di Preview deployment, lalu satu transaksi nominal kecil di Production.
-5. Pastikan email berisi invoice dan link akses masuk, dan invoice menampilkan `LUNAS`.
-6. Uji endpoint retry:
+2. Buka `/health`. Database dan skema harus `ok`, dan `warnings` harus kosong setelah semua kredensial diisi.
+3. Periksa header respons `/` dengan `curl.exe -I`: `X-Frame-Options`, `X-Content-Type-Options`, dan `Referrer-Policy` harus ada.
+4. Buka `/admin/login`, masuk, lalu buka **Pesanan** dan **Produk**. Jika login berhasil dan sesi bertahan, konfigurasi database dan `ci_sessions` benar.
+5. Daftarkan `https://domain-anda.com/webhook/midtrans` sebagai **Payment Notification URL** di Midtrans.
+6. Lakukan satu transaksi sandbox di Preview deployment, lalu satu transaksi nominal kecil di Production.
+7. Pastikan email berisi invoice dan link akses masuk, dan invoice menampilkan `LUNAS`.
+8. Uji ketiga endpoint cron:
 
    ```powershell
    curl.exe -i -H "Authorization: Bearer TOKEN_CRON" https://domain-anda.com/cron/retry-email
+   curl.exe -i -H "Authorization: Bearer TOKEN_CRON" https://domain-anda.com/cron/reconcile-payments
+   curl.exe -i -H "Authorization: Bearer TOKEN_CRON" https://domain-anda.com/cron/expire-orders
    ```
 
-   Respons normal:
+   Respons normal `retry-email`:
 
    ```json
    {"ok":true,"processed":0,"sent":0,"failed":0}
@@ -431,9 +531,12 @@ Catatan:
 
    Tanpa token, endpoint harus membalas `403`. Jika `CRON_SECRET` belum diatur, endpoint membalas `503`.
 
-### 6. Jadwalkan kirim ulang email
+9. Coba `POST /status` lebih dari 10 kali dalam satu menit. Request ke-11 harus membalas `429` dengan `Retry-After`.
+10. Buka **Admin → Pesanan**, klik **Ekspor CSV**, dan pastikan berkas terbuka rapi di Excel.
 
-Endpoint `GET /cron/retry-email` memproses pesanan `paid` yang emailnya belum terkirim. Endpoint ini memakai header:
+### 6. Jadwalkan cron operasional
+
+Tiga endpoint `GET` memakai header yang sama:
 
 ```text
 Authorization: Bearer <CRON_SECRET>
@@ -445,7 +548,13 @@ atau:
 X-Cron-Secret: <CRON_SECRET>
 ```
 
-**Vercel Hobby:** cron bawaan Vercel maksimal sekali sehari. Untuk retry tiap 15 menit, pakai scheduler eksternal gratis seperti cron-job.org, arahkan ke URL endpoint, dan tambahkan header `Authorization`. Jika retry harian cukup, tambahkan cron harian di `vercel.json`.
+| Endpoint | Jadwal yang disarankan |
+| --- | --- |
+| `/cron/retry-email` | Setiap 15 menit |
+| `/cron/reconcile-payments` | Setiap 15 menit, offset 5 menit |
+| `/cron/expire-orders` | Setiap 15 menit, offset 10 menit |
+
+**Vercel Hobby:** cron bawaan Vercel maksimal sekali sehari. Untuk jadwal 15 menit, pakai scheduler eksternal gratis seperti cron-job.org. Buat tiga job terpisah, arahkan ke URL endpoint, dan tambahkan header `Authorization: Bearer <CRON_SECRET>`. Jika jadwal harian cukup, tambahkan cron harian di `vercel.json`.
 
 **Vercel Pro:** boleh memakai jadwal per menit. Contoh `vercel.json`:
 
@@ -453,14 +562,16 @@ X-Cron-Secret: <CRON_SECRET>
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
-    { "path": "/cron/retry-email", "schedule": "*/15 * * * *" }
+    { "path": "/cron/retry-email", "schedule": "*/15 * * * *" },
+    { "path": "/cron/reconcile-payments", "schedule": "5,20,35,50 * * * *" },
+    { "path": "/cron/expire-orders", "schedule": "10,25,40,55 * * * *" }
   ]
 }
 ```
 
 Vercel otomatis mengirim header `Authorization: Bearer <CRON_SECRET>` pada cron bila variabel `CRON_SECRET` diisi.
 
-Tanpa scheduler, email gagal tetap bisa dikirim ulang manual dari dashboard **Pesanan → Kirim ulang email gagal**.
+Tanpa scheduler, email gagal tetap bisa dikirim ulang manual dari dashboard **Pesanan → Kirim ulang email gagal**. Expire tetap berjalan saat halaman pembayaran atau status pesanan dibuka, tetapi rekonsiliasi pembayaran tidak berjalan tanpa scheduler atau pemicu manual ke `/cron/reconcile-payments`.
 
 ### 7. Build container secara lokal (opsional)
 
@@ -550,6 +661,12 @@ Di Vercel, `php spark` tidak bisa dijalankan dari dashboard. Gunakan endpoint `/
 - `prefers-reduced-motion` mematikan animasi dan delay tanpa menyembunyikan konten.
 - Migrasi `ci_sessions` berhasil membuat tabel sesi pada SQLite lokal.
 - Endpoint `/cron/retry-email` membalas `503` tanpa `CRON_SECRET`, `403` untuk token salah, dan `200` untuk header `Authorization: Bearer` maupun `X-Cron-Secret`.
+- `/cron/reconcile-payments` dan `/cron/expire-orders` memakai autentikasi yang sama; expire menandai pesanan pending yang lewat `expires_at` tanpa mengirim email akses.
+- `GET /health` membalas `200` dengan `database` dan `schema` bernilai `ok` pada database lokal.
+- Security headers muncul pada halaman HTML, JSON `/health`, dan respons `429`.
+- `POST /status` yang dikirim 12 kali dalam satu menit membalas `200` pada 10 request pertama, lalu `429` dengan `Retry-After` dan halaman `errors/rate_limit.php`.
+- Ekspor CSV lolos uji unit: BOM UTF-8, header kolom, perhitungan diskon, dan netralisasi formula `=SUM(...)` serta nomor `+62`.
+- `php vendor\bin\phpunit --no-coverage` lulus 24 test dengan 69 assertion.
 - Konfigurasi produksi diuji lewat probe sementara: `DATABASE_URL` Neon terbaca sebagai PostgreSQL, password ter-decode, `sslmode=require` dipakai, `APP_BASE_URL` dinormalisasi, sesi memilih `PostgreHandler`, dan `WRITABLE_PATH` mengarah ke folder tulis alternatif.
 - Deploy produksi Vercel + Neon berhasil. `https://project-jiler.vercel.app` merespons `200` dengan `Content-Type: text/html; charset=UTF-8`.
 - Beranda produksi menampilkan tiga produk dari Neon, nama usaha masih placeholder "Nama Usaha", dan kredit "Nexus Diji".
@@ -575,7 +692,9 @@ Di Vercel, `php spark` tidak bisa dijalankan dari dashboard. Gunakan endpoint `/
 - Ganti `APP_KEY` dengan nilai acak baru, minimal 32 karakter.
 - Ganti email admin dan hash kata sandi admin.
 - Ganti semua link template, video, dan panduan yang masih memakai `example.com` dari menu **Produk**.
-- Isi `CRON_SECRET`, lalu jadwalkan `GET /cron/retry-email` setiap 15 menit.
+- Isi `CRON_SECRET`, lalu jadwalkan `/cron/retry-email`, `/cron/reconcile-payments`, dan `/cron/expire-orders` setiap 15 menit.
+- Pasang monitor uptime ke `https://domain-anda/health` dengan interval 5 menit dan notifikasi email.
+- Uji ekspor CSV setelah ada minimal satu pesanan asli.
 - Atur region Function Vercel sedekat mungkin dengan Neon. Proyek ini memakai `vercel.json` berisi `"regions": ["sin1"]` agar Function berjalan di Singapore, sama dengan Neon.
 - Uji satu pembayaran sandbox di Preview, lalu satu pembayaran produksi nominal kecil sebelum promosi.
 - Atur pencadangan database Neon. Folder `writable/` di Vercel hanya sementara.

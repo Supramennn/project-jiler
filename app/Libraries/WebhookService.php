@@ -8,20 +8,20 @@ use App\Models\OrderModel;
 class WebhookService
 {
     /**
-     * @return array{ok: bool, code: int, message: string}
+     * @return array{ok: bool, code: int, message: string, changed: bool}
      */
-    public function handle(array $payload, string $signature): array
+    public function handle(array $payload, string $signature, string $source = 'webhook'): array
     {
         foreach (['order_id', 'transaction_status', 'status_code', 'gross_amount'] as $field) {
             if (! isset($payload[$field]) || $payload[$field] === '') {
-                return ['ok' => false, 'code' => 400, 'message' => 'Payload tidak lengkap: ' . $field . '.'];
+                return ['ok' => false, 'code' => 400, 'message' => 'Payload tidak lengkap: ' . $field . '.', 'changed' => false];
             }
         }
 
         $order = model(OrderModel::class)->findByOrderId((string) $payload['order_id']);
 
         if ($order === null) {
-            return ['ok' => false, 'code' => 404, 'message' => 'Pesanan tidak ditemukan.'];
+            return ['ok' => false, 'code' => 404, 'message' => 'Pesanan tidak ditemukan.', 'changed' => false];
         }
 
         if (! $this->signatureIsValid($payload, $signature)) {
@@ -32,7 +32,7 @@ class WebhookService
                 ['status' => $payload['transaction_status']]
             );
 
-            return ['ok' => false, 'code' => 403, 'message' => 'Signature tidak valid.'];
+            return ['ok' => false, 'code' => 403, 'message' => 'Signature tidak valid.', 'changed' => false];
         }
 
         $grossAmount = (int) round((float) $payload['gross_amount']);
@@ -45,7 +45,7 @@ class WebhookService
                 $payload
             );
 
-            return ['ok' => false, 'code' => 400, 'message' => 'Nominal tidak sesuai.'];
+            return ['ok' => false, 'code' => 400, 'message' => 'Nominal tidak sesuai.', 'changed' => false];
         }
 
         $status = (string) $payload['transaction_status'];
@@ -61,28 +61,28 @@ class WebhookService
         $fulfillment = new OrderFulfillment();
 
         if ($status === 'settlement' || ($status === 'capture' && in_array($fraud, ['', 'accept'], true))) {
-            $fulfillment->markPaid($order, $payload, 'webhook');
+            $changed = $fulfillment->markPaid($order, $payload, $source);
 
-            return ['ok' => true, 'code' => 200, 'message' => 'Pembayaran diproses.'];
+            return ['ok' => true, 'code' => 200, 'message' => 'Pembayaran diproses.', 'changed' => $changed];
         }
 
         if ($status === 'pending') {
-            return ['ok' => true, 'code' => 200, 'message' => 'Pembayaran masih menunggu.'];
+            return ['ok' => true, 'code' => 200, 'message' => 'Pembayaran masih menunggu.', 'changed' => false];
         }
 
         if ($status === 'expire') {
-            $fulfillment->markExpired($order, $payload);
+            $changed = $fulfillment->markExpired($order, $payload, $source);
 
-            return ['ok' => true, 'code' => 200, 'message' => 'Pesanan ditandai kedaluwarsa.'];
+            return ['ok' => true, 'code' => 200, 'message' => 'Pesanan ditandai kedaluwarsa.', 'changed' => $changed];
         }
 
         if (in_array($status, ['deny', 'cancel', 'failure'], true)) {
-            $fulfillment->markFailed($order, $payload);
+            $changed = $fulfillment->markFailed($order, $payload, $source);
 
-            return ['ok' => true, 'code' => 200, 'message' => 'Pembayaran gagal dicatat.'];
+            return ['ok' => true, 'code' => 200, 'message' => 'Pembayaran gagal dicatat.', 'changed' => $changed];
         }
 
-        return ['ok' => true, 'code' => 200, 'message' => 'Status tidak mengubah pesanan.'];
+        return ['ok' => true, 'code' => 200, 'message' => 'Status tidak mengubah pesanan.', 'changed' => false];
     }
 
     private function signatureIsValid(array $payload, string $signature): bool

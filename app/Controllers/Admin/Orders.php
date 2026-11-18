@@ -3,11 +3,13 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\OrderCsv;
 use App\Libraries\OrderFulfillment;
 use App\Libraries\OrderMailer;
 use App\Models\EmailLogModel;
 use App\Models\OrderEventModel;
 use App\Models\OrderModel;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class Orders extends BaseController
 {
@@ -35,6 +37,26 @@ class Orders extends BaseController
             'title'  => 'Pesanan',
             'active' => 'orders',
         ]);
+    }
+
+    public function export(): ResponseInterface
+    {
+        $q           = trim((string) $this->request->getGet('q'));
+        $status      = (string) $this->request->getGet('status');
+        $emailStatus = (string) $this->request->getGet('email_status');
+
+        $orders = model(OrderModel::class)
+            ->applyFilters($q, $status, $emailStatus)
+            ->limit(5000)
+            ->findAll();
+
+        $filename = 'pesanan-' . date('Ymd-His') . '.csv';
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv; charset=UTF-8')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setHeader('Cache-Control', 'no-store')
+            ->setBody((new OrderCsv())->build($orders));
     }
 
     public function show(string $orderId): string

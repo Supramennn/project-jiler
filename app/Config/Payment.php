@@ -14,6 +14,7 @@ class Payment extends BaseConfig
     public string $midtransClientKey = '';
     public bool $midtransProduction  = false;
     public string $midtransSnapUrl   = 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+    public string $midtransApiUrl    = 'https://api.sandbox.midtrans.com';
 
     public function __construct()
     {
@@ -28,8 +29,15 @@ class Payment extends BaseConfig
         $defaultSnapUrl = $this->midtransProduction
             ? 'https://app.midtrans.com/snap/v1/transactions'
             : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+        $defaultApiUrl = $this->midtransProduction
+            ? 'https://api.midtrans.com'
+            : 'https://api.sandbox.midtrans.com';
 
-        $this->midtransSnapUrl = (string) env('MIDTRANS_SNAP_URL', $defaultSnapUrl);
+        $snapUrl = trim((string) env('MIDTRANS_SNAP_URL', ''));
+        $apiUrl  = trim((string) env('MIDTRANS_API_URL', ''));
+
+        $this->midtransSnapUrl = $snapUrl !== '' ? $snapUrl : $defaultSnapUrl;
+        $this->midtransApiUrl  = $apiUrl !== '' ? $apiUrl : $defaultApiUrl;
     }
 
     public function usesMidtrans(): bool
