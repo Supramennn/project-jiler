@@ -110,6 +110,6 @@ $diskon = max(0, (int) $order['product_harga'] - (int) $order['nominal']);
     </footer>
 </main>
 
-<script src="<?= base_url('assets/js/site.js') ?>"></script>
+<script src="<?= base_url('assets/js/site.js') ?>" defer></script>
 </body>
 </html>

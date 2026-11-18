@@ -81,6 +81,38 @@ class OrderModel extends Model
             ->countAllResults();
     }
 
+    public function dashboardSnapshot(): array
+    {
+        $todayStart = date('Y-m-d 00:00:00');
+        $todayEnd   = date('Y-m-d 23:59:59');
+        $monthStart = date('Y-m-01 00:00:00');
+
+        $row = $this->db->query(
+            "SELECT
+                COALESCE(SUM(CASE WHEN status = ? AND paid_at >= ? AND paid_at <= ? THEN nominal ELSE 0 END), 0) AS revenue_today,
+                COALESCE(SUM(CASE WHEN status = ? AND paid_at >= ? THEN nominal ELSE 0 END), 0) AS revenue_month,
+                COUNT(CASE WHEN status = ? AND paid_at >= ? THEN 1 END) AS paid_count_month,
+                COUNT(CASE WHEN status = ? THEN 1 END) AS pending_count,
+                COUNT(CASE WHEN status_email = ? THEN 1 END) AS failed_email_count
+             FROM orders",
+            [
+                'paid', $todayStart, $todayEnd,
+                'paid', $monthStart,
+                'paid', $monthStart,
+                'pending',
+                'gagal',
+            ]
+        )->getRowArray();
+
+        return [
+            'revenueToday'     => (int) ($row['revenue_today'] ?? 0),
+            'revenueMonth'     => (int) ($row['revenue_month'] ?? 0),
+            'paidCountMonth'   => (int) ($row['paid_count_month'] ?? 0),
+            'pendingCount'     => (int) ($row['pending_count'] ?? 0),
+            'failedEmailCount' => (int) ($row['failed_email_count'] ?? 0),
+        ];
+    }
+
     public function pendingCount(): int
     {
         return $this->where('status', 'pending')->countAllResults();
@@ -138,15 +170,28 @@ class OrderModel extends Model
     {
         $labels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
         $data   = [];
+        $totals = [];
+        $start  = date('Y-m-d 00:00:00', strtotime("-" . ($days - 1) . " days"));
+        $end    = date('Y-m-d 23:59:59');
+
+        $rows = $this->select('paid_at, nominal')
+            ->where('status', 'paid')
+            ->where('paid_at >=', $start)
+            ->where('paid_at <=', $end)
+            ->findAll();
+
+        foreach ($rows as $row) {
+            $date = substr((string) $row['paid_at'], 0, 10);
+            $totals[$date] = ($totals[$date] ?? 0) + (int) $row['nominal'];
+        }
 
         for ($i = $days - 1; $i >= 0; $i--) {
             $date  = date('Y-m-d', strtotime("-{$i} days"));
-            $total = $this->paidRevenue($date . ' 00:00:00', $date . ' 23:59:59');
 
             $data[] = [
                 'date'  => $date,
                 'label' => $labels[(int) date('w', strtotime($date))],
-                'total' => $total,
+                'total' => $totals[$date] ?? 0,
             ];
         }
 

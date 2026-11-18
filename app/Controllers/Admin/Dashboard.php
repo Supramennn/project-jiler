@@ -12,15 +12,28 @@ class Dashboard extends BaseController
     public function index(): string
     {
         $orderModel = model(OrderModel::class);
-        $daily      = $orderModel->dailyRevenue(7);
+        $snapshot   = cache()->get('admin_dashboard_snapshot');
+
+        if (! is_array($snapshot)) {
+            $snapshot = $orderModel->dashboardSnapshot();
+            cache()->save('admin_dashboard_snapshot', $snapshot, 30);
+        }
+
+        $daily = cache()->get('admin_dashboard_daily_revenue');
+
+        if (! is_array($daily)) {
+            $daily = $orderModel->dailyRevenue(7);
+            cache()->save('admin_dashboard_daily_revenue', $daily, 30);
+        }
+
         $maxDaily   = max(array_column($daily, 'total')) ?: 1;
 
         return $this->renderAdmin('admin/dashboard', [
-            'revenueToday'      => $orderModel->revenueToday(),
-            'revenueMonth'      => $orderModel->revenueThisMonth(),
-            'paidCountMonth'    => $orderModel->paidCountThisMonth(),
-            'pendingCount'      => $orderModel->pendingCount(),
-            'failedEmailCount'  => $orderModel->failedEmailCount(),
+            'revenueToday'      => $snapshot['revenueToday'],
+            'revenueMonth'      => $snapshot['revenueMonth'],
+            'paidCountMonth'    => $snapshot['paidCountMonth'],
+            'pendingCount'      => $snapshot['pendingCount'],
+            'failedEmailCount'  => $snapshot['failedEmailCount'],
             'failedEmails'      => $orderModel->failedEmailOrders(),
             'stalePending'      => $orderModel->stalePendingOrders(),
             'recentOrders'      => $orderModel->recentOrders(),

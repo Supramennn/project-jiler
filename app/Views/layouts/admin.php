@@ -79,6 +79,6 @@
     </div>
 </div>
 
-<script src="<?= base_url('assets/js/site.js') ?>"></script>
+<script src="<?= base_url('assets/js/site.js') ?>" defer></script>
 </body>
 </html>

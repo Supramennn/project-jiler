@@ -26,7 +26,7 @@ $persen     = product_discount_percent($product);
 
         <?php if (! empty($product['gambar'])): ?>
             <div style="margin-top: 26px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--paper-2);">
-                <img src="<?= esc($product['gambar']) ?>" alt="Gambar produk <?= esc($product['nama']) ?>" loading="lazy">
+                <img src="<?= esc($product['gambar']) ?>" alt="Gambar produk <?= esc($product['nama']) ?>" loading="lazy" decoding="async">
             </div>
         <?php endif; ?>
 

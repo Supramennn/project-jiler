@@ -56,6 +56,7 @@ abstract class BaseController extends Controller
     {
         $store = config('Store');
         $data['store'] = $store;
+        $this->response->setHeader('Cache-Control', 'no-store, private');
 
         return view('layouts/admin', [
             'title'   => $meta['title'] ?? 'Dashboard',
@@ -73,6 +74,7 @@ abstract class BaseController extends Controller
     {
         $store = config('Store');
         $data['store'] = $store;
+        $this->response->setHeader('Cache-Control', 'no-store, private');
 
         return view('layouts/admin_auth', [
             'title'   => 'Masuk dashboard',
