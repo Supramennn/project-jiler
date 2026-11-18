@@ -41,6 +41,7 @@ class Payment extends BaseController
             'title'       => 'Pembayaran ' . $order['order_id'],
             'description' => 'Pilih metode pembayaran untuk pesanan ' . $order['order_id'] . '.',
             'active'      => '',
+            'robots'      => 'noindex,nofollow',
         ]);
     }
 
@@ -121,6 +122,7 @@ class Payment extends BaseController
             'title'       => 'Status pesanan ' . $order['order_id'],
             'description' => 'Status pembayaran dan pengiriman akses untuk pesanan ' . $order['order_id'] . '.',
             'active'      => '',
+            'robots'      => 'noindex,nofollow',
         ]);
     }
 
@@ -135,6 +137,7 @@ class Payment extends BaseController
             'title'       => 'Pembayaran belum selesai',
             'description' => 'Pesanan ' . $order['order_id'] . ' belum berhasil dibayar.',
             'active'      => '',
+            'robots'      => 'noindex,nofollow',
         ]);
     }
 

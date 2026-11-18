@@ -16,6 +16,7 @@ class Status extends BaseController
             'title'       => 'Cek status pesanan',
             'description' => 'Cek status pembayaran dan pengiriman akses dengan nomor pesanan dan email pembeli.',
             'active'      => 'status',
+            'robots'      => 'noindex,nofollow',
         ]);
     }
 

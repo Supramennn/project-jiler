@@ -1,5 +1,6 @@
 <?php
 $featuredFeatures = $featured ? array_slice(product_features($featured['fitur']), 0, 4) : [];
+$faqs             = $faqs ?? [];
 ?>
 <section class="hero">
     <div class="wrap hero-grid">
@@ -151,34 +152,12 @@ $featuredFeatures = $featured ? array_slice(product_features($featured['fitur'])
         </div>
 
         <div class="faq">
-            <details>
-                <summary>Apakah saya perlu akun Google?</summary>
-                <div class="faq-answer">Ya. Template disalin ke Google Drive Anda dan web app di-deploy dari akun Google sendiri. Tanpa akun Google, template tidak bisa dipakai.</div>
-            </details>
-            <details>
-                <summary>Apakah harus bisa coding untuk deploy?</summary>
-                <div class="faq-answer">Tidak. Panduan video dan teks menunjukkan langkah menyalin template dan men-deploy web app. Anda hanya perlu mengikuti urutan langkahnya.</div>
-            </details>
-            <details>
-                <summary>Kapan link template dikirim?</summary>
-                <div class="faq-answer">Setelah gateway mengirim notifikasi pembayaran berhasil ke backend. Redirect dari halaman bayar tidak dianggap bukti bayar. Email biasanya diproses dalam waktu singkat setelah pembayaran terverifikasi.</div>
-            </details>
-            <details>
-                <summary>Apakah akses template punya masa berlaku?</summary>
-                <div class="faq-answer">Tidak. Akses berlaku selamanya. Link template tidak memiliki masa kedaluwarsa, tetapi hanya dikirim ke email pembeli setelah pembayaran berhasil.</div>
-            </details>
-            <details>
-                <summary>Bagaimana jika email tidak masuk?</summary>
-                <div class="faq-answer">Periksa folder spam terlebih dahulu, lalu buka halaman cek status pesanan memakai nomor pesanan dan email. Jika email tercatat gagal, admin bisa mengirim ulang dari dashboard.</div>
-            </details>
-            <details>
-                <summary>Metode pembayaran apa yang tersedia?</summary>
-                <div class="faq-answer">VA Permata, GoPay, dan QRIS. Dana masuk ke rekening Permata atau GoPay milik penjual melalui gateway pembayaran.</div>
-            </details>
-            <details>
-                <summary>Apakah ada refund?</summary>
-                <div class="faq-answer">Kebijakan refund belum ditetapkan. Jika ada kendala setelah pembelian, hubungi admin melalui email yang tertera di invoice agar bisa ditinjau.</div>
-            </details>
+            <?php foreach ($faqs as $faq): ?>
+                <details>
+                    <summary><?= esc($faq['q']) ?></summary>
+                    <div class="faq-answer"><?= esc($faq['a']) ?></div>
+                </details>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>

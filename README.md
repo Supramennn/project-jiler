@@ -195,6 +195,29 @@ INVOICE_PREFIX = 'INV'
 
 `INVOICE_PREFIX` hanya memengaruhi nomor invoice dan order baru. Pesanan lama tetap memakai nomor yang sudah tersimpan.
 
+## SEO
+
+Halaman publik mengirim title, meta description, canonical, robots, Open Graph, Twitter card, dan JSON-LD. Tidak ada `og:image` sampai produk punya gambar sendiri, jadi tautan yang dibagikan hanya memakai judul dan deskripsi.
+
+Yang sudah berjalan:
+
+- `/sitemap.xml` dibuat dari produk aktif, katalog, dan halaman legal.
+- `/robots.txt` menutup admin, checkout, pembayaran, invoice, status, webhook, dan cron.
+- Checkout, pembayaran, invoice, status, dan admin memakai `noindex,nofollow`.
+- Halaman produk memakai schema `Product` dengan harga yang benar-benar ditagih, termasuk harga promo, ditambah `BreadcrumbList`.
+- Beranda memakai schema `FAQPage` dari pertanyaan yang benar-benar tampil di halaman.
+- `Organization` dan `WebSite` hanya dipasang jika `STORE_NAME` berisi nama usaha yang sebenarnya.
+
+Langkah aktivasi:
+
+1. Isi `STORE_NAME` dengan nama usaha asli. Jangan memakai teks contoh `Nama Toko Anda`, karena teks itu ikut masuk ke title dan schema.
+2. Isi `APP_BASE_URL` dengan domain produksi, misalnya `https://project-jiler.vercel.app`.
+3. Deploy, lalu buka `https://domain-anda.com/sitemap.xml` dan `https://domain-anda.com/robots.txt`.
+4. Daftarkan domain di Google Search Console, pilih verifikasi HTML tag, lalu isi tokennya di `GOOGLE_SITE_VERIFICATION` pada environment Vercel.
+5. Deploy ulang, kembali ke Search Console, dan kirim `/sitemap.xml`.
+
+Pendaftaran Google Search Console dan Bing Webmaster Tools tidak bisa dilakukan dari kode karena memerlukan akun pemilik domain.
+
 ## Konfigurasi penting
 
 | Variabel | Keterangan |
@@ -202,6 +225,7 @@ INVOICE_PREFIX = 'INV'
 | `CI_ENVIRONMENT` | `development` atau `production` |
 | `APP_BASE_URL` | Alamat publik website, misalnya `https://toko.vercel.app` |
 | `app.baseURL` | Alamat lokal, harus diakhiri garis miring |
+| `GOOGLE_SITE_VERIFICATION` | Token verifikasi Google Search Console, boleh kosong |
 | `STORE_NAME` | Nama usaha, boleh kosong selama pengembangan |
 | `STORE_PRODUCER` | Kredit produsen, default Nexus Diji |
 | `STORE_EMAIL` | Email kontak yang tampil di invoice dan footer |

@@ -4,6 +4,9 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
+$routes->get('sitemap.xml', 'Seo::sitemap');
+$routes->get('robots.txt', 'Seo::robots');
+
 $routes->get('/', 'Home::index');
 
 $routes->get('produk', 'Catalog::index');

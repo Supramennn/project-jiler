@@ -3,14 +3,47 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= esc($title) ?> · <?= esc(store_name()) ?></title>
+    <?php $pageTitle = seo_title($title); ?>
+    <title><?= esc($pageTitle) ?></title>
     <meta name="description" content="<?= esc($description) ?>">
+    <meta name="robots" content="<?= esc($robots) ?>">
+    <link rel="canonical" href="<?= esc($canonical) ?>">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
     <meta name="theme-color" content="#f6f1e7">
+    <?php if ($verification !== ''): ?>
+        <meta name="google-site-verification" content="<?= esc($verification) ?>">
+    <?php endif; ?>
+
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:type" content="<?= esc($ogType) ?>">
+    <meta property="og:title" content="<?= esc($pageTitle) ?>">
+    <meta property="og:description" content="<?= esc($description) ?>">
+    <meta property="og:url" content="<?= esc($canonical) ?>">
+    <?php if (seo_store_name() !== null): ?>
+        <meta property="og:site_name" content="<?= esc(seo_store_name()) ?>">
+    <?php endif; ?>
+    <?php if ($ogImage !== ''): ?>
+        <meta property="og:image" content="<?= esc($ogImage) ?>">
+        <meta name="twitter:image" content="<?= esc($ogImage) ?>">
+    <?php endif; ?>
+    <?php if ($product !== null): ?>
+        <meta property="product:price:amount" content="<?= esc((string) product_price($product)) ?>">
+        <meta property="product:price:currency" content="IDR">
+    <?php endif; ?>
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="<?= esc($pageTitle) ?>">
+    <meta name="twitter:description" content="<?= esc($description) ?>">
+
     <script>document.documentElement.classList.add('js');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('assets/css/site.css') ?>">
+    <?php $jsonLdOutput = seo_json_ld($jsonLd); ?>
+    <?php if ($jsonLdOutput !== ''): ?>
+        <script type="application/ld+json"><?= $jsonLdOutput ?></script>
+    <?php endif; ?>
 </head>
 <body class="site-body">
 <a class="skip-link" href="#main">Lewati ke konten</a>

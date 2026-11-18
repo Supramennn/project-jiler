@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= esc($title) ?> · <?= esc(store_name()) ?></title>
+    <meta name="robots" content="noindex,nofollow">
     <meta name="theme-color" content="#f6f1e7">
     <script>document.documentElement.classList.add('js');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">

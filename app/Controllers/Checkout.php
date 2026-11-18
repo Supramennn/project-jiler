@@ -22,6 +22,7 @@ class Checkout extends BaseController
             'title'       => 'Checkout ' . $product['nama'],
             'description' => 'Isi data pembeli untuk membeli ' . $product['nama'] . '.',
             'active'      => 'catalog',
+            'robots'      => 'noindex,nofollow',
         ]);
     }
 

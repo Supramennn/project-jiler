@@ -13,9 +13,15 @@ class Catalog extends BaseController
         return $this->renderPublic('catalog/index', [
             'products' => $products,
         ], [
-            'title'       => 'Katalog template stok',
-            'description' => 'Pilih template Manajemen Stok Barang sesuai kebutuhan usaha. Harga sekali bayar, akses selamanya.',
+            'title'       => 'Katalog Template Manajemen Stok Barang',
+            'description' => 'Bandingkan tiga template Manajemen Stok Barang: versi dasar, Plus, dan Multi-Gudang. Harga sekali bayar, akses selamanya.',
             'active'      => 'catalog',
+            'jsonLd'      => [
+                seo_breadcrumb_schema([
+                    ['name' => 'Beranda', 'url' => site_url('/')],
+                    ['name' => 'Produk', 'url' => site_url('produk')],
+                ]),
+            ],
         ]);
     }
 
@@ -32,8 +38,19 @@ class Catalog extends BaseController
             'fitur'   => product_features($product['fitur']),
         ], [
             'title'       => $product['nama'],
-            'description' => mb_substr(strip_tags($product['deskripsi']), 0, 155),
+            'description' => seo_first_sentence($product['deskripsi']),
             'active'      => 'catalog',
+            'type'        => 'product',
+            'product'     => $product,
+            'image'       => seo_product_image($product),
+            'jsonLd'      => [
+                seo_product_schema($product),
+                seo_breadcrumb_schema([
+                    ['name' => 'Beranda', 'url' => site_url('/')],
+                    ['name' => 'Produk', 'url' => site_url('produk')],
+                    ['name' => $product['nama'], 'url' => site_url('produk/' . $product['slug'])],
+                ]),
+            ],
         ]);
     }
 }

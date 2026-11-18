@@ -14,6 +14,8 @@ class Invoice extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Invoice tidak ditemukan.');
         }
 
+        $this->response->setHeader('X-Robots-Tag', 'noindex, nofollow');
+
         return view('invoice/show', [
             'order' => $order,
             'store' => config('Store'),

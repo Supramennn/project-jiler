@@ -27,12 +27,28 @@ abstract class BaseController extends Controller
         $store = config('Store');
         $data['store'] = $store;
 
+        $robots = (string) ($meta['robots'] ?? 'index,follow');
+        $jsonLd = $meta['jsonLd'] ?? [];
+
+        if (! str_contains($robots, 'noindex')) {
+            $jsonLd = array_merge(seo_site_schemas(), $jsonLd);
+        } else {
+            $this->response->setHeader('X-Robots-Tag', 'noindex, nofollow');
+        }
+
         return view('layouts/public', [
-            'title'       => $meta['title'] ?? store_name(),
-            'description' => $meta['description'] ?? $store->tagline,
-            'active'      => $meta['active'] ?? '',
-            'content'     => view($view, $data),
-            'store'       => $store,
+            'title'        => $meta['title'] ?? store_name(),
+            'description'  => seo_description($meta['description'] ?? $store->tagline, 160),
+            'active'       => $meta['active'] ?? '',
+            'canonical'    => $meta['canonical'] ?? seo_canonical(),
+            'robots'       => $robots,
+            'ogType'       => $meta['type'] ?? 'website',
+            'ogImage'      => $meta['image'] ?? '',
+            'product'      => $meta['product'] ?? null,
+            'jsonLd'       => $jsonLd,
+            'verification' => (string) env('GOOGLE_SITE_VERIFICATION', ''),
+            'content'      => view($view, $data),
+            'store'        => $store,
         ]);
     }
 
