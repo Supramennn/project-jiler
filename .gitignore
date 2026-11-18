@@ -1,3 +1,19 @@
 .env
 .vercel
 .env*
+
+# Runtime artifacts; keep directory placeholders so writable paths exist after clone.
+/build/
+/writable/cache/*
+!/writable/cache/index.html
+/writable/debugbar/*
+!/writable/debugbar/index.html
+/writable/emails/*
+!/writable/emails/index.html
+/writable/logs/*
+!/writable/logs/index.html
+/writable/session/*
+!/writable/session/index.html
+/writable/uploads/*
+!/writable/uploads/index.html
+/writable/database.sqlite
