@@ -113,6 +113,15 @@ class Cookie extends BaseConfig
     {
         parent::__construct();
 
-        $this->secure = filter_var(env('COOKIE_SECURE', $this->secure), FILTER_VALIDATE_BOOLEAN);
+        $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? '')));
+        $isLocalHost = $host === 'localhost' || str_starts_with($host, 'localhost:')
+            || $host === '127.0.0.1' || str_starts_with($host, '127.0.0.1:')
+            || $host === '::1';
+
+        if ($isLocalHost) {
+            $this->secure = false;
+        } else {
+            $this->secure = filter_var(env('COOKIE_SECURE', $this->secure), FILTER_VALIDATE_BOOLEAN);
+        }
     }
 }

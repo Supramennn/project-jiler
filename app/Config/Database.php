@@ -210,6 +210,44 @@ class Database extends Config
      */
     private function applyEnvironmentOverrides(): void
     {
+        $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? '')));
+        $isLocalHost = $host === 'localhost' || str_starts_with($host, 'localhost:')
+            || $host === '127.0.0.1' || str_starts_with($host, '127.0.0.1:')
+            || $host === '::1';
+        $environment = strtolower(trim((string) env('CI_ENVIRONMENT', 'production')));
+
+        if ($isLocalHost || $environment === 'development') {
+            $this->default = [
+                'DSN'          => '',
+                'hostname'     => 'localhost',
+                'username'     => '',
+                'password'     => '',
+                'database'     => WRITEPATH . 'database.sqlite',
+                'DBDriver'     => 'SQLite3',
+                'DBPrefix'     => '',
+                'pConnect'     => false,
+                'DBDebug'      => true,
+                'charset'      => 'utf8',
+                'DBCollat'     => '',
+                'swapPre'      => '',
+                'encrypt'      => false,
+                'compress'     => false,
+                'strictOn'    => true,
+                'failover'    => [],
+                'port'        => 0,
+                'foreignKeys' => true,
+                'busyTimeout' => 1000,
+                'synchronous' => null,
+                'dateFormat'  => [
+                    'date'     => 'Y-m-d',
+                    'datetime' => 'Y-m-d H:i:s',
+                    'time'     => 'H:i:s',
+                ],
+            ];
+
+            return;
+        }
+
         $portSet = false;
         $url     = (string) (env('DATABASE_URL_UNPOOLED')
             ?: env('POSTGRES_URL_NON_POOLING')

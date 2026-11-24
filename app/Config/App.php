@@ -208,7 +208,21 @@ class App extends BaseConfig
     {
         parent::__construct();
 
-        $base = trim((string) env('APP_BASE_URL', ''));
+        $environment = strtolower(trim((string) env('CI_ENVIRONMENT', 'production')));
+        $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? '')));
+        $isLocalHost = $host === 'localhost' || str_starts_with($host, 'localhost:')
+            || $host === '127.0.0.1' || str_starts_with($host, '127.0.0.1:')
+            || $host === '::1';
+        $isLocalDevelopment = $environment === 'development' || $isLocalHost;
+        $base = trim((string) env('APP_BASE_URL', (string) env('app.baseURL', '')));
+
+        if ($isLocalDevelopment) {
+            $this->forceGlobalSecureRequests = false;
+
+            if ($base === '' || str_starts_with(strtolower($base), 'https://')) {
+                $base = 'http://localhost:8080';
+            }
+        }
 
         if ($base === '' && getenv('VERCEL') !== false) {
             $host = (string) (env('VERCEL_PROJECT_PRODUCTION_URL') ?: env('VERCEL_URL') ?: '');

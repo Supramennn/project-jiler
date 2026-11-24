@@ -136,6 +136,18 @@ class Session extends BaseConfig
     {
         parent::__construct();
 
+        $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? '')));
+        $isLocalHost = $host === 'localhost' || str_starts_with($host, 'localhost:')
+            || $host === '127.0.0.1' || str_starts_with($host, '127.0.0.1:')
+            || $host === '::1';
+        $environment = strtolower(trim((string) env('CI_ENVIRONMENT', 'production')));
+
+        if ($isLocalHost || $environment === 'development') {
+            $this->driver = FileHandler::class;
+            $this->savePath = WRITEPATH . 'session';
+            return;
+        }
+
         if (strtolower((string) env('SESSION_DRIVER', '')) !== 'database') {
             return;
         }
