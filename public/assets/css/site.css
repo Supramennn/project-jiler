@@ -164,21 +164,6 @@ textarea {
     color: var(--ink);
 }
 
-.brand-lockup {
-    display: block;
-    width: 188px;
-    min-height: 48px;
-}
-
-.brand-lockup img {
-    width: 188px;
-    height: auto;
-    max-height: 48px;
-    display: block;
-    object-fit: contain;
-    object-position: left center;
-}
-
 .brand-mark {
     width: 48px;
     height: 48px;
@@ -193,16 +178,17 @@ textarea {
     letter-spacing: -0.04em;
 }
 
-.brand-mark-logo {
+.brand-mark-image {
     overflow: hidden;
     border: 0;
     background: transparent;
 }
 
-.brand-mark-logo img {
+.brand-mark-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    display: block;
+    object-fit: contain;
 }
 
 .brand-text {
@@ -2226,16 +2212,6 @@ textarea {
 
     .header-inner {
         min-height: 68px;
-    }
-
-    .brand-lockup {
-        width: 156px;
-        min-height: 44px;
-    }
-
-    .brand-lockup img {
-        width: 156px;
-        max-height: 44px;
     }
 
     .site-nav {

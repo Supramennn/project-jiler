@@ -50,8 +50,14 @@
 
 <header class="site-header" data-site-header>
     <div class="wrap header-inner">
-        <a class="brand brand-lockup" href="<?= site_url('/') ?>" aria-label="<?= esc(store_name()) ?>">
-            <img src="<?= base_url('assets/img/brand/zafscript-logo.png') ?>?v=20261124" alt="<?= esc(store_name()) ?> - Template Apps Script" width="1002" height="721">
+        <a class="brand" href="<?= site_url('/') ?>" aria-label="<?= esc(store_name()) ?>">
+            <span class="brand-mark brand-mark-image" aria-hidden="true">
+                <img src="<?= base_url('assets/img/brand/zafscript-mark-48.png') ?>?v=20261124" alt="" width="48" height="48">
+            </span>
+            <span class="brand-text">
+                <?= esc(store_name()) ?>
+                <small>Template Apps Script</small>
+            </span>
         </a>
 
         <nav class="site-nav" id="site-nav" data-site-nav aria-label="Navigasi utama">
