@@ -164,9 +164,24 @@ textarea {
     color: var(--ink);
 }
 
+.brand-lockup {
+    display: block;
+    width: 188px;
+    min-height: 48px;
+}
+
+.brand-lockup img {
+    width: 188px;
+    height: auto;
+    max-height: 48px;
+    display: block;
+    object-fit: contain;
+    object-position: left center;
+}
+
 .brand-mark {
-    width: 42px;
-    height: 42px;
+    width: 48px;
+    height: 48px;
     display: grid;
     place-items: center;
     border: 1px solid var(--gold);
@@ -180,7 +195,8 @@ textarea {
 
 .brand-mark-logo {
     overflow: hidden;
-    background: #17140f;
+    border: 0;
+    background: transparent;
 }
 
 .brand-mark-logo img {
@@ -193,7 +209,7 @@ textarea {
     display: flex;
     flex-direction: column;
     font-family: var(--serif);
-    font-size: 23px;
+    font-size: 25px;
     font-weight: 700;
     line-height: 1;
 }
@@ -2210,6 +2226,16 @@ textarea {
 
     .header-inner {
         min-height: 68px;
+    }
+
+    .brand-lockup {
+        width: 156px;
+        min-height: 44px;
+    }
+
+    .brand-lockup img {
+        width: 156px;
+        max-height: 44px;
     }
 
     .site-nav {
