@@ -51,7 +51,9 @@
 <header class="site-header" data-site-header>
     <div class="wrap header-inner">
         <a class="brand" href="<?= site_url('/') ?>" aria-label="<?= esc(store_name()) ?>">
-            <span class="brand-mark" aria-hidden="true"><?= esc(store_initials()) ?></span>
+            <span class="brand-mark brand-mark-logo" aria-hidden="true">
+                <img src="<?= base_url('assets/img/brand/zafscript-mark-48.png') ?>" alt="" width="48" height="48">
+            </span>
             <span class="brand-text">
                 <?= esc(store_name()) ?>
                 <small>Template Apps Script</small>
