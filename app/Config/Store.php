@@ -6,8 +6,8 @@ use CodeIgniter\Config\BaseConfig;
 
 class Store extends BaseConfig
 {
-    public string $name       = '';
-    public string $tagline    = 'Template stok siap pakai untuk usaha kecil';
+    public string $name       = 'ZafScript';
+    public string $tagline    = 'Template Apps Script siap pakai untuk usaha kecil';
     public string $email      = 'halo@namausaha.test';
     public string $whatsapp   = '';
     public string $address    = 'Alamat usaha belum diatur';

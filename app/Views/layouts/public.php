@@ -54,7 +54,7 @@
             <span class="brand-mark" aria-hidden="true"><?= esc(store_initials()) ?></span>
             <span class="brand-text">
                 <?= esc(store_name()) ?>
-                <small>Template stok</small>
+                <small>Template Apps Script</small>
             </span>
         </a>
 
@@ -92,7 +92,7 @@
                     <span class="brand-mark" aria-hidden="true"><?= esc(store_initials()) ?></span>
                     <span class="brand-text">
                         <?= esc(store_name()) ?>
-                        <small>Template stok</small>
+                        <small>Template Apps Script</small>
                     </span>
                 </a>
                 <p><?= esc($store->tagline) ?>. Pembayaran diproses lewat gateway, akses template dikirim otomatis ke email setelah pembayaran terverifikasi.</p>

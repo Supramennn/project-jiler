@@ -1,12 +1,12 @@
 # Dokumentasi Toko Template Digital
 
-Website penjualan template **Manajemen Stok Barang** berbasis CodeIgniter 4. Pembeli memilih produk, membayar lewat gateway, lalu menerima invoice dan link akses lewat email setelah pembayaran terverifikasi.
+Website penjualan template **Apps Script** milik **ZafScript** berbasis CodeIgniter 4. Pembeli memilih produk, membayar lewat gateway, lalu menerima invoice dan link akses lewat email setelah pembayaran terverifikasi.
 
-Proyek ini dikembangkan oleh **Nexus Diji**. Nama usaha sengaja dikosongkan karena akan diisi oleh pemilik toko. Selama kosong, antarmuka memakai placeholder **Nama Usaha** dan inisial **NU**.
+Proyek ini dikembangkan oleh **Nexus Diji**. Nama usaha default adalah **ZafScript** dan bisa diganti lewat `STORE_NAME`.
 
 ## Status
 
-- Nama usaha: kosong, memakai placeholder.
+- Nama usaha: ZafScript.
 - Kredit produsen: Nexus Diji, tampil di footer, sidebar dashboard, dan halaman login.
 - Pembayaran lokal: sandbox.
 - Email lokal: file, tersimpan di `writable/emails`.
@@ -164,29 +164,24 @@ Password : admin12345
 
 Kredensial ini hanya untuk lokal. Ganti hash kata sandi sebelum website dipasang di server publik.
 
-## Mengisi nama usaha
+## Nama dan identitas usaha
 
-Isi `STORE_NAME` di `.env`:
+Nama default adalah **ZafScript**. Nilainya diatur di `app/Config/Store.php` dan bisa ditimpa lewat `.env`:
 
 ```dotenv
-STORE_NAME = 'Nama Toko Anda'
+STORE_NAME = 'ZafScript'
 ```
 
-Setelah disimpan, muat ulang halaman. Nama itu dipakai di header, footer, invoice, email, dashboard, dan judul halaman. Inisial brand diambil dari dua kata pertama nama toko.
+Nama itu dipakai di header, footer, invoice, email, dashboard, dan judul halaman. Inisial brand diambil dari dua huruf pertama nama satu kata, sehingga ZafScript memakai **ZA**.
 
-Selama `STORE_NAME` kosong:
-
-- Header dan footer menampilkan **Nama Usaha**.
-- Brand mark menampilkan **NU**.
-- Invoice dan email memakai placeholder yang sama.
-- Halaman pengaturan menampilkan peringatan agar nama segera diisi.
+Jika `STORE_NAME` dikosongkan, antarmuka kembali memakai placeholder **Nama Usaha** dan inisial **NU**, dan halaman pengaturan menampilkan peringatan.
 
 Nexus Diji tidak ikut berubah. Kredit **Diproduksi oleh Nexus Diji** tetap tampil karena itu adalah identitas produsen proyek.
 
 Data usaha lain yang sebaiknya diisi:
 
 ```dotenv
-STORE_TAGLINE = 'Template stok siap pakai untuk usaha kecil'
+STORE_TAGLINE = 'Template Apps Script siap pakai untuk usaha kecil'
 STORE_EMAIL = 'halo@namausaha.test'
 STORE_WHATSAPP = ''
 STORE_ADDRESS = 'Alamat usaha belum diatur'
@@ -210,7 +205,7 @@ Yang sudah berjalan:
 
 Langkah aktivasi:
 
-1. Isi `STORE_NAME` dengan nama usaha asli. Jangan memakai teks contoh `Nama Toko Anda`, karena teks itu ikut masuk ke title dan schema.
+1. Pastikan `STORE_NAME` berisi nama final, saat ini `ZafScript`. Jangan memakai teks contoh `Nama Toko Anda`, karena teks itu ikut masuk ke title dan schema.
 2. Isi `APP_BASE_URL` dengan domain produksi, misalnya `https://project-jiler.vercel.app`.
 3. Deploy, lalu buka `https://domain-anda.com/sitemap.xml` dan `https://domain-anda.com/robots.txt`.
 4. Daftarkan domain di Google Search Console, pilih verifikasi HTML tag, lalu isi tokennya di `GOOGLE_SITE_VERIFICATION` pada environment Vercel.
@@ -471,7 +466,7 @@ SESSION_COOKIE_NAME = nexus_session
 SESSION_EXPIRATION = 7200
 COOKIE_SECURE = true
 
-STORE_NAME = 'Nama Toko Anda'
+STORE_NAME = 'ZafScript'
 STORE_EMAIL = 'email-anda@gmail.com'
 STORE_ADDRESS = 'Alamat usaha'
 STORE_PRODUCER = 'Nexus Diji'
@@ -489,7 +484,7 @@ MIDTRANS_IS_PRODUCTION = true
 
 MAIL_DRIVER = smtp
 MAIL_FROM_EMAIL = 'email-anda@gmail.com'
-MAIL_FROM_NAME = 'Nama Toko Anda'
+MAIL_FROM_NAME = 'ZafScript'
 MAIL_SMTP_HOST = 'smtp.gmail.com'
 MAIL_SMTP_PORT = 587
 MAIL_SMTP_USER = 'email-anda@gmail.com'
@@ -669,7 +664,7 @@ Di Vercel, `php spark` tidak bisa dijalankan dari dashboard. Gunakan endpoint `/
 - `php vendor\bin\phpunit --no-coverage` lulus 25 test dengan 72 assertion.
 - Konfigurasi produksi diuji lewat probe sementara: `DATABASE_URL` Neon terbaca sebagai PostgreSQL, password ter-decode, `sslmode=require` dipakai, `APP_BASE_URL` dinormalisasi, sesi memilih `PostgreHandler`, dan `WRITABLE_PATH` mengarah ke folder tulis alternatif.
 - Deploy produksi Vercel + Neon berhasil. `https://project-jiler.vercel.app` merespons `200` dengan `Content-Type: text/html; charset=UTF-8`.
-- Beranda produksi menampilkan tiga produk dari Neon, nama usaha masih placeholder "Nama Usaha", dan kredit "Nexus Diji".
+- Beranda produksi menampilkan tiga produk dari Neon dan nama usaha ZafScript, dengan kredit "Nexus Diji".
 - Login admin produksi berhasil dan dashboard dapat dibuka, sehingga sesi PostgreSQL dan tabel `ci_sessions` bekerja.
 - Endpoint cron produksi membalas `403` tanpa token dan `200` dengan token yang benar.
 - `public/index.php` dieksekusi sebagai PHP; `/.env`, `app/Config/Database.php`, dan `composer.json` tidak dapat diakses publik.

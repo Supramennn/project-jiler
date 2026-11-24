@@ -5,8 +5,8 @@ $faqs             = $faqs ?? [];
 <section class="hero">
     <div class="wrap hero-grid">
         <div class="hero-copy">
-            <h1>Stok rapi tanpa hitung ulang di buku tulis.</h1>
-            <p class="lede">Template Manajemen Stok Barang siap salin ke akun Google Anda. Bayar sekali, akses selamanya. Invoice, link template, dan panduan deploy dikirim ke email setelah pembayaran terverifikasi.</p>
+            <h1>Otomatisasi usaha dengan template Apps Script.</h1>
+            <p class="lede">Template siap salin ke akun Google Anda, lengkap dengan web app dan panduan deploy. Bayar sekali, akses selamanya. Invoice dan link akses dikirim ke email setelah pembayaran terverifikasi.</p>
             <div class="hero-actions">
                 <a class="btn btn-primary" href="<?= site_url('produk') ?>">Lihat katalog template</a>
                 <a class="btn btn-ghost" href="<?= site_url('status') ?>">Cek status pesanan</a>
@@ -70,8 +70,8 @@ $faqs             = $faqs ?? [];
 <section class="section" id="produk">
     <div class="wrap">
         <div class="section-head">
-            <h2>Pilih template sesuai cara Anda mencatat stok.</h2>
-            <p>Satu produk berisi template, web app, dan panduan deploy. Harga berbeda mengikuti tingkat kompleksitas alur pencatatan.</p>
+            <h2>Pilih template sesuai kebutuhan usaha.</h2>
+            <p>Satu produk berisi template Google Sheets, web app Apps Script, dan panduan deploy. Harga mengikuti tingkat kompleksitas alur kerja.</p>
         </div>
 
         <?php if ($products === []): ?>
@@ -107,7 +107,7 @@ $faqs             = $faqs ?? [];
 <section class="section" id="cara-kerja">
     <div class="wrap feature-grid">
         <div class="feature-copy">
-            <h2>Dibuat untuk stok yang bergerak, bukan untuk presentasi.</h2>
+            <h2>Dibuat untuk pekerjaan berulang, bukan untuk presentasi.</h2>
             <p>Template mencatat barang masuk dan keluar, lalu menghitung sisa stok. Anda menyalinnya ke Google Drive sendiri, jadi data tetap berada di akun Anda. Panduan deploy disiapkan untuk pembeli yang belum pernah memakai Apps Script.</p>
             <p>Yang perlu Anda siapkan: akun Google dan waktu untuk mengikuti panduan. Tidak perlu menulis kode.</p>
             <?php if ($featured !== null && $featuredFeatures !== []): ?>
@@ -165,7 +165,7 @@ $faqs             = $faqs ?? [];
 <section class="cta-band">
     <div class="wrap cta-band-inner">
         <div>
-            <h2>Siap menyiapkan stok yang lebih rapi?</h2>
+            <h2>Siap memulai otomatisasi usaha?</h2>
             <p>Pilih template, bayar, lalu ikuti panduan deploy. Akses dikirim ke email setelah pembayaran terverifikasi.</p>
         </div>
         <a class="btn btn-gold" href="<?= site_url('produk') ?>">Buka katalog</a>

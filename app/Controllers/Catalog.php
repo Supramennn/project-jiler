@@ -13,8 +13,8 @@ class Catalog extends BaseController
         return $this->renderPublic('catalog/index', [
             'products' => $products,
         ], [
-            'title'       => 'Katalog Template Manajemen Stok Barang',
-            'description' => 'Bandingkan tiga template Manajemen Stok Barang: versi dasar, Plus, dan Multi-Gudang. Harga sekali bayar, akses selamanya.',
+            'title'       => 'Katalog Template Apps Script',
+            'description' => 'Bandingkan template Apps Script untuk manajemen stok: versi dasar, Plus, dan Multi-Gudang. Harga sekali bayar, akses selamanya.',
             'active'      => 'catalog',
             'jsonLd'      => [
                 seo_breadcrumb_schema([

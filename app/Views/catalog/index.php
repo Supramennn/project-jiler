@@ -5,8 +5,8 @@
             <span aria-hidden="true">/</span>
             <span>Produk</span>
         </nav>
-        <h1>Katalog template stok.</h1>
-        <p>Setiap produk berisi template Google Sheets, web app Apps Script, video panduan, dan panduan teks. Pilih yang paling dekat dengan cara usaha Anda mencatat stok.</p>
+        <h1>Katalog template Apps Script.</h1>
+        <p>Setiap produk berisi template Google Sheets, web app Apps Script, video panduan, dan panduan teks. Pilih yang paling dekat dengan cara usaha Anda bekerja.</p>
     </div>
 </section>
 

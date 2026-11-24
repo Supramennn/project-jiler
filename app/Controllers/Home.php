@@ -47,8 +47,8 @@ class Home extends BaseController
             'featured' => $featured,
             'faqs'     => $faqs,
         ], [
-            'title'       => 'Template Manajemen Stok Barang Siap Pakai',
-            'description' => 'Template Google Sheets dan web app Apps Script untuk mencatat stok masuk, stok keluar, dan sisa stok. Bayar sekali, akses selamanya.',
+            'title'       => 'Template Apps Script Siap Pakai',
+            'description' => 'Template Google Sheets dan web app Apps Script siap pakai untuk otomatisasi usaha. Bayar sekali, akses selamanya.',
             'active'      => 'home',
             'jsonLd'      => [seo_faq_schema($faqs)],
         ]);
