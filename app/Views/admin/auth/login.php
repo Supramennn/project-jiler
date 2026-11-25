@@ -1,7 +1,9 @@
 <div class="login-shell">
     <section class="login-brand-panel">
         <a class="brand" href="<?= site_url('/') ?>">
-            <span class="brand-mark" aria-hidden="true"><?= esc(store_initials()) ?></span>
+            <span class="brand-mark brand-mark-image" aria-hidden="true">
+                <img src="<?= base_url('assets/img/brand/zafscript-photo.jpg') ?>" alt="" width="48" height="48">
+            </span>
             <span class="brand-text">
                 <?= esc(store_name()) ?>
                 <small>Dashboard</small>

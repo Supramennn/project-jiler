@@ -6,6 +6,8 @@
     <title><?= esc($title) ?> · <?= esc(store_name()) ?></title>
     <meta name="robots" content="noindex,nofollow">
     <meta name="theme-color" content="#f6f1e7">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
+    <link rel="apple-touch-icon" href="<?= base_url('apple-touch-icon.png') ?>">
     <script>document.documentElement.classList.add('js');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +19,9 @@
 <div class="admin-shell">
     <aside class="admin-sidebar" id="admin-sidebar" data-admin-sidebar>
         <a class="brand" href="<?= site_url('admin') ?>">
-            <span class="brand-mark" aria-hidden="true"><?= esc(store_initials()) ?></span>
+            <span class="brand-mark brand-mark-image" aria-hidden="true">
+                <img src="<?= base_url('assets/img/brand/zafscript-photo.jpg') ?>" alt="" width="48" height="48">
+            </span>
             <span class="brand-text">
                 <?= esc(store_name()) ?>
                 <small>Dashboard</small>
