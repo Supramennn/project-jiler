@@ -2,7 +2,7 @@
     <section class="login-brand-panel">
         <a class="brand" href="<?= site_url('/') ?>">
             <span class="brand-mark brand-mark-image" aria-hidden="true">
-                <img src="<?= base_url('assets/img/brand/zafscript-photo.jpg') ?>" alt="" width="48" height="48">
+                <img src="<?= base_url('assets/img/brand/zafscript-monogram.jpg') ?>" alt="" width="48" height="48">
             </span>
             <span class="brand-text">
                 <?= esc(store_name()) ?>

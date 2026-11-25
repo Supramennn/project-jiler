@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title>Terlalu banyak percobaan</title>
-    <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
-    <link rel="apple-touch-icon" href="<?= base_url('apple-touch-icon.png') ?>">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>?v=20261125" sizes="any">
+    <link rel="apple-touch-icon" href="<?= base_url('apple-touch-icon.png') ?>?v=20261125" sizes="180x180">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">

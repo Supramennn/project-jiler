@@ -167,6 +167,7 @@ textarea {
 .brand-mark {
     width: 48px;
     height: 48px;
+    flex: 0 0 auto;
     display: grid;
     place-items: center;
     border: 1px solid var(--gold);
@@ -243,8 +244,8 @@ textarea {
 
 .nav-toggle {
     display: none;
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
     border: 1px solid var(--line-strong);
     background: var(--paper-2);
     border-radius: var(--radius);
@@ -1644,6 +1645,7 @@ textarea {
     font-family: var(--serif);
     font-size: 30px;
     font-weight: 600;
+    line-height: 1;
 }
 
 .result-head h1 {
@@ -1807,11 +1809,6 @@ textarea {
     display: flex;
     align-items: center;
     gap: 12px;
-}
-
-.invoice-brand .brand-mark {
-    width: 46px;
-    height: 46px;
 }
 
 .invoice-brand strong {
@@ -2212,6 +2209,11 @@ textarea {
 
     .header-inner {
         min-height: 68px;
+    }
+
+    .brand-mark {
+        width: 42px;
+        height: 42px;
     }
 
     .site-nav {

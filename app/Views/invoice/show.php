@@ -8,8 +8,8 @@ $diskon = max(0, (int) $order['product_harga'] - (int) $order['nominal']);
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invoice <?= esc($order['nomor_invoice']) ?> · <?= esc(store_name()) ?></title>
     <meta name="robots" content="noindex,nofollow">
-    <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
-    <link rel="apple-touch-icon" href="<?= base_url('apple-touch-icon.png') ?>">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>?v=20261125" sizes="any">
+    <link rel="apple-touch-icon" href="<?= base_url('apple-touch-icon.png') ?>?v=20261125" sizes="180x180">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -31,7 +31,7 @@ $diskon = max(0, (int) $order['product_harga'] - (int) $order['nominal']);
     <header class="invoice-top">
         <div class="invoice-brand">
             <span class="brand-mark brand-mark-image" aria-hidden="true">
-                <img src="<?= base_url('assets/img/brand/zafscript-photo.jpg') ?>" alt="" width="48" height="48">
+                <img src="<?= base_url('assets/img/brand/zafscript-monogram.jpg') ?>" alt="" width="48" height="48">
             </span>
             <div>
                 <strong><?= esc(store_name()) ?></strong>

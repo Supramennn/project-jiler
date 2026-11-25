@@ -6,8 +6,8 @@
     <title><?= esc($title) ?> · <?= esc(store_name()) ?></title>
     <meta name="robots" content="noindex,nofollow">
     <meta name="theme-color" content="#17140f">
-    <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
-    <link rel="apple-touch-icon" href="<?= base_url('apple-touch-icon.png') ?>">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>?v=20261125" sizes="any">
+    <link rel="apple-touch-icon" href="<?= base_url('apple-touch-icon.png') ?>?v=20261125" sizes="180x180">
     <script>document.documentElement.classList.add('js');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

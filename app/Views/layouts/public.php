@@ -8,8 +8,8 @@
     <meta name="description" content="<?= esc($description) ?>">
     <meta name="robots" content="<?= esc($robots) ?>">
     <link rel="canonical" href="<?= esc($canonical) ?>">
-    <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
-    <link rel="apple-touch-icon" href="<?= base_url('apple-touch-icon.png') ?>">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>?v=20261125" sizes="any">
+    <link rel="apple-touch-icon" href="<?= base_url('apple-touch-icon.png') ?>?v=20261125" sizes="180x180">
     <meta name="theme-color" content="#f6f1e7">
     <?php if ($verification !== ''): ?>
         <meta name="google-site-verification" content="<?= esc($verification) ?>">
@@ -53,7 +53,7 @@
     <div class="wrap header-inner">
         <a class="brand" href="<?= site_url('/') ?>" aria-label="<?= esc(store_name()) ?>">
             <span class="brand-mark brand-mark-image" aria-hidden="true">
-                <img src="<?= base_url('assets/img/brand/zafscript-photo.jpg') ?>" alt="" width="48" height="48">
+                <img src="<?= base_url('assets/img/brand/zafscript-monogram.jpg') ?>" alt="" width="48" height="48">
             </span>
             <span class="brand-text">
                 <?= esc(store_name()) ?>
@@ -93,7 +93,7 @@
             <div class="footer-brand">
                 <a class="brand" href="<?= site_url('/') ?>">
                     <span class="brand-mark brand-mark-image" aria-hidden="true">
-                        <img src="<?= base_url('assets/img/brand/zafscript-photo.jpg') ?>" alt="" width="48" height="48">
+                        <img src="<?= base_url('assets/img/brand/zafscript-monogram.jpg') ?>" alt="" width="48" height="48">
                     </span>
                     <span class="brand-text">
                         <?= esc(store_name()) ?>
