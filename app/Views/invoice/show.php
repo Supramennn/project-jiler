@@ -31,7 +31,7 @@ $diskon = max(0, (int) $order['product_harga'] - (int) $order['nominal']);
     <header class="invoice-top">
         <div class="invoice-brand">
             <span class="brand-mark brand-mark-image" aria-hidden="true">
-                <img src="<?= base_url('assets/img/brand/zafscript-monogram.jpg') ?>" alt="" width="48" height="48">
+                <img src="<?= base_url('assets/img/brand/zafscript-mark.png?v=20261126') ?>" alt="" width="48" height="48">
             </span>
             <div>
                 <strong><?= esc(store_name()) ?></strong>

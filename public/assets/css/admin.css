@@ -24,10 +24,8 @@
     padding: 0 6px;
 }
 
-.admin-sidebar .brand-mark {
-    background: transparent;
-    border-color: rgba(233, 220, 196, 0.35);
-    color: #e3c88f;
+.admin-sidebar .brand-mark-image img {
+    filter: brightness(1.75) saturate(1.04);
 }
 
 .admin-sidebar .brand-text small {

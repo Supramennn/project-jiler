@@ -52,10 +52,8 @@
     color: var(--paper);
 }
 
-.login-brand-panel .brand-mark {
-    background: transparent;
-    border-color: rgba(233, 220, 196, 0.4);
-    color: #e3c88f;
+.login-brand-panel .brand-mark-image img {
+    filter: brightness(1.75) saturate(1.04);
 }
 
 .login-brand-panel .brand-text small {

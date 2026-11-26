@@ -53,7 +53,7 @@
     <div class="wrap header-inner">
         <a class="brand" href="<?= site_url('/') ?>" aria-label="<?= esc(store_name()) ?>">
             <span class="brand-mark brand-mark-image" aria-hidden="true">
-                <img src="<?= base_url('assets/img/brand/zafscript-monogram.jpg') ?>" alt="" width="48" height="48">
+                <img src="<?= base_url('assets/img/brand/zafscript-mark.png?v=20261126') ?>" alt="" width="48" height="48">
             </span>
             <span class="brand-text">
                 <?= esc(store_name()) ?>
@@ -93,7 +93,7 @@
             <div class="footer-brand">
                 <a class="brand" href="<?= site_url('/') ?>">
                     <span class="brand-mark brand-mark-image" aria-hidden="true">
-                        <img src="<?= base_url('assets/img/brand/zafscript-monogram.jpg') ?>" alt="" width="48" height="48">
+                        <img src="<?= base_url('assets/img/brand/zafscript-mark.png?v=20261126') ?>" alt="" width="48" height="48">
                     </span>
                     <span class="brand-text">
                         <?= esc(store_name()) ?>
