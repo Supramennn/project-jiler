@@ -82,10 +82,7 @@
                             <?php endif; ?>
                         </div>
                     </div>
-                    <div class="result-actions">
-                        <a class="btn btn-primary" href="<?= site_url('invoice/' . $order['order_id'] . '/' . $order['access_token']) ?>">Buka invoice</a>
-                        <a class="btn btn-ghost" href="<?= site_url('sukses/' . $order['order_id']) ?>">Lihat halaman pesanan</a>
-                    </div>
+                    <p class="summary-note">Invoice tersedia melalui tautan aman di email pesanan atau halaman pembayaran yang Anda buka setelah checkout.</p>
                 <?php elseif ($order['status'] === 'pending'): ?>
                     <div class="notice notice-warn">
                         <div>
@@ -93,9 +90,7 @@
                             Pembayaran belum dikonfirmasi gateway. Akses template belum dikirim.
                         </div>
                     </div>
-                    <div class="result-actions">
-                        <a class="btn btn-primary" href="<?= site_url('pembayaran/' . $order['order_id']) ?>">Lanjutkan pembayaran</a>
-                    </div>
+                    <p class="summary-note">Untuk melanjutkan pembayaran, gunakan tautan aman dari halaman checkout. Jika tautan tidak tersedia, hubungi admin dengan nomor pesanan.</p>
                 <?php else: ?>
                     <div class="notice notice-danger">
                         <div>

@@ -184,7 +184,7 @@ $diskon      = max(0, (int) $order['product_harga'] - (int) $order['nominal']);
                     <?php endif; ?>
 
                     <?php if ($order['status'] === 'pending'): ?>
-                        <a class="btn btn-ghost btn-small" href="<?= site_url('pembayaran/' . $order['order_id']) ?>">Halaman pembayaran</a>
+                        <a class="btn btn-ghost btn-small" href="<?= site_url('pembayaran/' . $order['order_id'] . '/' . $order['access_token']) ?>">Halaman pembayaran</a>
                     <?php endif; ?>
 
                     <a class="btn btn-ghost btn-small" href="<?= site_url('admin/pesanan/' . $order['order_id'] . '/invoice') ?>">Invoice</a>

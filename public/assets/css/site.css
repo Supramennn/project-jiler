@@ -186,6 +186,11 @@ textarea {
     background: transparent;
 }
 
+/* Monogram is only as tall as the wordmark; centre it on that line, not the tagline block. */
+.brand .brand-mark-image {
+    transform: translateY(-4px);
+}
+
 .brand-mark-image img {
     width: 100%;
     height: 100%;

@@ -31,7 +31,7 @@
                     <p class="summary-note" style="margin-top: 10px;">Metode sebelumnya (<?= esc(payment_method_label($order['payment_method'])) ?>) akan diganti setelah Anda membuat instruksi baru.</p>
                 <?php endif; ?>
 
-                <form action="<?= site_url('pembayaran/' . $order['order_id'] . '/metode') ?>" method="post">
+                <form action="<?= site_url('pembayaran/' . $order['order_id'] . '/' . $order['access_token'] . '/metode') ?>" method="post">
                     <?= csrf_field() ?>
                     <div class="method-list">
                         <label class="method-option">
@@ -80,7 +80,7 @@
                         <?php endforeach; ?>
                     </ol>
 
-                    <form action="<?= site_url('pembayaran/' . $order['order_id'] . '/simulasi') ?>" method="post" style="margin-top: 22px;" data-confirm="Simulasikan pembayaran berhasil? Pesanan akan ditandai dibayar dan email akses diproses.">
+                    <form action="<?= site_url('pembayaran/' . $order['order_id'] . '/' . $order['access_token'] . '/simulasi') ?>" method="post" style="margin-top: 22px;" data-confirm="Simulasikan pembayaran berhasil? Pesanan akan ditandai dibayar dan email akses diproses.">
                         <?= csrf_field() ?>
                         <button class="btn btn-gold btn-block" type="submit">Simulasikan pembayaran berhasil</button>
                     </form>
@@ -91,7 +91,7 @@
                 <?php endif; ?>
 
                 <?php if ($driver === 'sandbox'): ?>
-                    <p style="margin-top: 18px; font-size: 12.5px;"><a href="<?= site_url('pembayaran/' . $order['order_id'] . '?ganti=1') ?>">Ganti metode pembayaran</a></p>
+                    <p style="margin-top: 18px; font-size: 12.5px;"><a href="<?= site_url('pembayaran/' . $order['order_id'] . '/' . $order['access_token'] . '?ganti=1') ?>">Ganti metode pembayaran</a></p>
                 <?php else: ?>
                     <p class="summary-note" style="margin-top: 18px;">Untuk memakai metode pembayaran lain, buat pesanan baru dari katalog. Midtrans mengikat satu nomor pesanan ke satu transaksi.</p>
                 <?php endif; ?>

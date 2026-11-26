@@ -16,11 +16,11 @@ $routes->get('produk/(:segment)', 'Catalog::show/$1');
 $routes->get('checkout/(:segment)', 'Checkout::index/$1');
 $routes->post('checkout/(:segment)', 'Checkout::create/$1', ['filter' => 'throttle:5,60,checkout']);
 
-$routes->get('pembayaran/(:segment)', 'Payment::show/$1');
-$routes->post('pembayaran/(:segment)/metode', 'Payment::choose/$1', ['filter' => 'throttle:10,60,payment-method']);
-$routes->post('pembayaran/(:segment)/simulasi', 'Payment::simulate/$1', ['filter' => 'throttle:10,60,payment-simulate']);
-$routes->get('sukses/(:segment)', 'Payment::success/$1');
-$routes->get('gagal/(:segment)', 'Payment::failed/$1');
+$routes->get('pembayaran/(:segment)/(:segment)', 'Payment::show/$1/$2');
+$routes->post('pembayaran/(:segment)/(:segment)/metode', 'Payment::choose/$1/$2', ['filter' => 'throttle:10,60,payment-method']);
+$routes->post('pembayaran/(:segment)/(:segment)/simulasi', 'Payment::simulate/$1/$2', ['filter' => 'throttle:10,60,payment-simulate']);
+$routes->get('sukses/(:segment)/(:segment)', 'Payment::success/$1/$2');
+$routes->get('gagal/(:segment)/(:segment)', 'Payment::failed/$1/$2');
 
 $routes->get('status', 'Status::index');
 $routes->post('status', 'Status::check', ['filter' => 'throttle:10,60,status']);

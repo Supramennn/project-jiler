@@ -84,7 +84,7 @@ class Checkout extends BaseController
             return redirect()->back()->withInput()->with('error', 'Pesanan gagal dibuat. Silakan coba lagi.');
         }
 
-        return redirect()->to('pembayaran/' . $order['order_id'])
+        return redirect()->to('pembayaran/' . $order['order_id'] . '/' . $order['access_token'])
             ->with('success', 'Pesanan dibuat. Pilih metode pembayaran untuk melanjutkan.');
     }
 }

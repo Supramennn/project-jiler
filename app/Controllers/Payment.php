@@ -10,17 +10,17 @@ use Throwable;
 
 class Payment extends BaseController
 {
-    public function show(string $orderId)
+    public function show(string $orderId, string $token)
     {
-        $order = $this->findOr404($orderId);
+        $order = $this->findOr404($orderId, $token);
         $order = (new OrderService())->expireIfNeeded($order);
 
         if ($order['status'] === 'paid') {
-            return redirect()->to('sukses/' . $order['order_id']);
+            return redirect()->to('sukses/' . $order['order_id'] . '/' . $token);
         }
 
         if (in_array($order['status'], ['expired', 'gagal'], true)) {
-            return redirect()->to('gagal/' . $order['order_id']);
+            return redirect()->to('gagal/' . $order['order_id'] . '/' . $token);
         }
 
         $payment      = config('Payment');
@@ -45,13 +45,15 @@ class Payment extends BaseController
         ]);
     }
 
-    public function choose(string $orderId)
+    public function choose(string $orderId, string $token)
     {
-        $order = $this->findOr404($orderId);
+        $order = $this->findOr404($orderId, $token);
         $order = (new OrderService())->expireIfNeeded($order);
 
         if ($order['status'] !== 'pending') {
-            return redirect()->to($order['status'] === 'paid' ? 'sukses/' . $order['order_id'] : 'gagal/' . $order['order_id']);
+            $destination = $order['status'] === 'paid' ? 'sukses/' : 'gagal/';
+
+            return redirect()->to($destination . $order['order_id'] . '/' . $token);
         }
 
         $method = (string) $this->request->getPost('metode');
@@ -72,24 +74,24 @@ class Payment extends BaseController
             return redirect()->to($result['redirect_url']);
         }
 
-        return redirect()->to('pembayaran/' . $order['order_id'])
+        return redirect()->to('pembayaran/' . $order['order_id'] . '/' . $token)
             ->with('success', 'Instruksi pembayaran sudah dibuat. Selesaikan pembayaran sesuai petunjuk.');
     }
 
-    public function simulate(string $orderId)
+    public function simulate(string $orderId, string $token)
     {
         if (ENVIRONMENT === 'production' || config('Payment')->effectiveDriver() !== 'sandbox') {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Simulasi hanya tersedia pada mode sandbox.');
         }
 
-        $order = $this->findOr404($orderId);
+        $order = $this->findOr404($orderId, $token);
 
         if ($order['status'] === 'paid') {
-            return redirect()->to('sukses/' . $order['order_id']);
+            return redirect()->to('sukses/' . $order['order_id'] . '/' . $token);
         }
 
         if ($order['status'] !== 'pending') {
-            return redirect()->to('gagal/' . $order['order_id']);
+            return redirect()->to('gagal/' . $order['order_id'] . '/' . $token);
         }
 
         if ($order['payment_method'] === null) {
@@ -103,17 +105,17 @@ class Payment extends BaseController
             return redirect()->back()->with('error', 'Simulasi gagal: ' . $result['message']);
         }
 
-        return redirect()->to('sukses/' . $order['order_id'])
+        return redirect()->to('sukses/' . $order['order_id'] . '/' . $token)
             ->with('success', 'Pembayaran sandbox diterima. Email akses diproses.');
     }
 
-    public function success(string $orderId): string
+    public function success(string $orderId, string $token): string
     {
-        $order = $this->findOr404($orderId);
+        $order = $this->findOr404($orderId, $token);
         $order = (new OrderService())->expireIfNeeded($order);
 
         if (in_array($order['status'], ['expired', 'gagal'], true)) {
-            return redirect()->to('gagal/' . $order['order_id'])->with('error', 'Pesanan ini tidak bisa dibayar lagi. Silakan buat pesanan baru.');
+            return redirect()->to('gagal/' . $order['order_id'] . '/' . $token)->with('error', 'Pesanan ini tidak bisa dibayar lagi. Silakan buat pesanan baru.');
         }
 
         return $this->renderPublic('payment/success', [
@@ -126,9 +128,9 @@ class Payment extends BaseController
         ]);
     }
 
-    public function failed(string $orderId): string
+    public function failed(string $orderId, string $token): string
     {
-        $order = $this->findOr404($orderId);
+        $order = $this->findOr404($orderId, $token);
         $order = (new OrderService())->expireIfNeeded($order);
 
         return $this->renderPublic('payment/failed', [
@@ -141,14 +143,23 @@ class Payment extends BaseController
         ]);
     }
 
-    private function findOr404(string $orderId): array
+    private function findOr404(string $orderId, string $token): array
     {
-        $order = model(OrderModel::class)->findByOrderId($orderId);
+        $order = model(OrderModel::class)->findByToken($orderId, $token);
 
         if ($order === null) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Pesanan tidak ditemukan.');
         }
 
+        $this->setPrivateResponseHeaders();
+
         return $order;
+    }
+
+    private function setPrivateResponseHeaders(): void
+    {
+        $this->response
+            ->setHeader('Cache-Control', 'private, no-store, max-age=0')
+            ->setHeader('Pragma', 'no-cache');
     }
 }

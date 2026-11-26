@@ -35,11 +35,12 @@ class PaymentService
 
         $reference = $this->sandboxReference($method);
 
-        $this->savePayment($order, $method, $reference, site_url('pembayaran/' . $order['order_id']));
+        $paymentUrl = site_url('pembayaran/' . $order['order_id'] . '/' . $order['access_token']);
+        $this->savePayment($order, $method, $reference, $paymentUrl);
 
         return [
             'driver'       => 'sandbox',
-            'redirect_url' => site_url('pembayaran/' . $order['order_id']),
+            'redirect_url' => $paymentUrl,
             'instructions' => $this->sandboxInstructions($method, $reference),
             'reference'    => $reference,
         ];
@@ -208,7 +209,7 @@ class PaymentService
                 'duration' => (int) $config->expiryHours,
             ],
             'callbacks' => [
-                'finish' => site_url('sukses/' . $order['order_id']),
+                'finish' => site_url('sukses/' . $order['order_id'] . '/' . $order['access_token']),
             ],
         ];
 

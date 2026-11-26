@@ -28,6 +28,7 @@ COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY Caddyfile /etc/caddy/Caddyfile
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
     && mkdir -p /tmp/writable/cache /tmp/writable/debugbar /tmp/writable/emails \
         /tmp/writable/logs /tmp/writable/session /tmp/writable/uploads
 

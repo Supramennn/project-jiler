@@ -72,7 +72,7 @@ class Dashboard extends BaseController
             'Pesanan uji dibuat dari dashboard untuk mengecek alur pembayaran dan email.'
         );
 
-        return redirect()->to('pembayaran/' . $order['order_id'])
+        return redirect()->to('pembayaran/' . $order['order_id'] . '/' . $order['access_token'])
             ->with('success', 'Pesanan uji dibuat. Pilih metode pembayaran, lalu gunakan tombol simulasi.');
     }
 }

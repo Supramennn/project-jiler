@@ -46,7 +46,7 @@ $canRetry = $order['status'] === 'pending';
 
         <div class="result-actions">
             <?php if ($canRetry): ?>
-                <a class="btn btn-primary" href="<?= site_url('pembayaran/' . $order['order_id']) ?>">Lanjutkan pembayaran</a>
+                <a class="btn btn-primary" href="<?= site_url('pembayaran/' . $order['order_id'] . '/' . $order['access_token']) ?>">Lanjutkan pembayaran</a>
             <?php endif; ?>
             <a class="btn btn-ghost" href="<?= site_url('status') ?>">Cek status pesanan</a>
             <a class="btn btn-quiet" href="<?= site_url('produk') ?>">Buat pesanan baru</a>

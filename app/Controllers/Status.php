@@ -49,6 +49,11 @@ class Status extends BaseController
             ]);
         }
 
+        unset($order['access_token']);
+        $this->response
+            ->setHeader('Cache-Control', 'private, no-store, max-age=0')
+            ->setHeader('Pragma', 'no-cache');
+
         return $this->renderPublic('status/index', [
             'order' => $order,
             'error' => null,
@@ -70,6 +75,10 @@ class Status extends BaseController
                 'message' => 'Pesanan tidak ditemukan.',
             ]);
         }
+
+        $this->response
+            ->setHeader('Cache-Control', 'private, no-store, max-age=0')
+            ->setHeader('Pragma', 'no-cache');
 
         return $this->response->setJSON([
             'ok'           => true,

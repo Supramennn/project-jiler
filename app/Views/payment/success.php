@@ -121,8 +121,8 @@ $pollUrl = site_url('status/' . $order['order_id']) . '?token=' . $order['access
             <p class="summary-note" data-poll-note style="margin-top: 18px;">Status diperiksa otomatis setiap beberapa detik. Anda juga bisa memuat ulang halaman ini.</p>
 
             <div class="result-actions">
-                <a class="btn btn-primary" href="<?= site_url('pembayaran/' . $order['order_id']) ?>">Lanjutkan pembayaran</a>
-                <a class="btn btn-ghost" href="<?= site_url('sukses/' . $order['order_id']) ?>">Muat ulang status</a>
+                <a class="btn btn-primary" href="<?= site_url('pembayaran/' . $order['order_id'] . '/' . $order['access_token']) ?>">Lanjutkan pembayaran</a>
+                <a class="btn btn-ghost" href="<?= site_url('sukses/' . $order['order_id'] . '/' . $order['access_token']) ?>">Muat ulang status</a>
                 <a class="btn btn-quiet" href="<?= site_url('status') ?>">Cek status pesanan</a>
             </div>
         </div>
